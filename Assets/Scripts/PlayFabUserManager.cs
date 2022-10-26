@@ -9,9 +9,9 @@ public class PlayFabUserManager : MonoBehaviour
     [SerializeField]
     private GameObject registerPanel, loginPanel, menuPanel;
     [SerializeField]
-    private TMP_InputField reg_email, reg_username, reg_password, reg_confirm_password, login_email, login_password;
+    private TMP_InputField reg_email, reg_username, reg_password, reg_confirm_password, login_email, login_password, displayName, update_displayName;
     [SerializeField]
-    private TextMeshProUGUI log;
+    private TextMeshProUGUI log, account_username, account_ID;
 
     public void OnRegister()
     {
@@ -20,6 +20,7 @@ public class PlayFabUserManager : MonoBehaviour
             Email = reg_email.text,
             Username = reg_username.text,
             Password = reg_password.text,
+            DisplayName = reg_username.text
         };
         if (reg_password.text == reg_confirm_password.text)
             PlayFabClientAPI.RegisterPlayFabUser(registerRequest, OnRegSuccess, OnError);
@@ -35,6 +36,7 @@ public class PlayFabUserManager : MonoBehaviour
         reg_password.text = "";
         registerPanel.SetActive(false);
         loginPanel.SetActive(true);
+
         UpdateMsg("Registration success!");
     }
 
@@ -52,14 +54,56 @@ public class PlayFabUserManager : MonoBehaviour
     {
         loginPanel.SetActive(false);
         menuPanel.SetActive(true);
+
+        var accountInfoRequest = new GetAccountInfoRequest
+        {
+            Email = login_email.text
+        };
+        PlayFabClientAPI.GetAccountInfo(accountInfoRequest, GetAccountInfoSuccess, OnError);
+        
         UpdateMsg("Login Success!");
     }
 
+    private void GetAccountInfoSuccess(GetAccountInfoResult r)
+    {
+        account_username.text = "Logged in as: " + r.AccountInfo.Username;
+        account_ID.text = "User ID: " + r.AccountInfo.PlayFabId;
+    }
+        
     public void OnLogout()
     {
         PlayFabClientAPI.ForgetAllCredentials();
         login_email.text = "";
         login_password.text = "";
+        account_username.text = "";
+        account_ID.text = "";
+    }
+
+    public void OnGuestLogin()
+    {
+        var request = new LoginWithCustomIDRequest { CustomId = "GettingStartedGuide", CreateAccount = true };
+        PlayFabClientAPI.LoginWithCustomID(request, OnGuestLoginSuccess, OnError);
+    }
+
+    private void OnGuestLoginSuccess(LoginResult result)
+    {
+        loginPanel.SetActive(false);
+        menuPanel.SetActive(true);
+        UpdateMsg("Congratulations, you made your first successful API call!");
+    }
+
+    public void UpdateDisplayName()
+    {
+        var updateDisplayNameRequest = new UpdateUserTitleDisplayNameRequest
+        {
+            DisplayName = update_displayName.text,
+        };
+        PlayFabClientAPI.UpdateUserTitleDisplayName(updateDisplayNameRequest, OnDisplayNameUpdate, OnError);
+    }
+
+    private void OnDisplayNameUpdate(UpdateUserTitleDisplayNameResult r)
+    {
+        UpdateMsg("Display name updated!" + r.DisplayName);
     }
 
     private void OnError(PlayFabError e)
