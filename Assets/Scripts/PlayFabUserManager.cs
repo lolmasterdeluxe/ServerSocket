@@ -9,9 +9,9 @@ public class PlayFabUserManager : MonoBehaviour
     [SerializeField]
     private GameObject registerPanel, loginPanel, menuPanel;
     [SerializeField]
-    private TMP_InputField reg_email, reg_username, reg_password, reg_confirm_password, login_email, login_password, displayName, update_displayName;
+    private TMP_InputField reg_email, reg_username, reg_password, reg_confirm_password, login_email, login_password, update_displayName;
     [SerializeField]
-    private TextMeshProUGUI log, account_username, account_ID;
+    private TextMeshProUGUI log, account_username, account_ID, displayName;
 
     public void OnRegister()
     {
@@ -57,9 +57,15 @@ public class PlayFabUserManager : MonoBehaviour
 
         var accountInfoRequest = new GetAccountInfoRequest
         {
-            Email = login_email.text
+            Email = login_email.text,
         };
         PlayFabClientAPI.GetAccountInfo(accountInfoRequest, GetAccountInfoSuccess, OnError);
+
+        var displayNameRequest = new GetPlayerProfileRequest
+        {
+            PlayFabId = int.Parse(account_ID.text).ToString("X")
+        };
+        PlayFabClientAPI.GetPlayerProfile(displayNameRequest, GetDisplayNameSuccess, OnError);
         
         UpdateMsg("Login Success!");
     }
@@ -68,6 +74,12 @@ public class PlayFabUserManager : MonoBehaviour
     {
         account_username.text = "Logged in as: " + r.AccountInfo.Username;
         account_ID.text = "User ID: " + r.AccountInfo.PlayFabId;
+    }
+
+    private void GetDisplayNameSuccess(GetPlayerProfileResult r)
+    {
+        displayName.text = r.PlayerProfile.DisplayName;
+        update_displayName.text = r.PlayerProfile.DisplayName;
     }
         
     public void OnLogout()
@@ -103,6 +115,7 @@ public class PlayFabUserManager : MonoBehaviour
 
     private void OnDisplayNameUpdate(UpdateUserTitleDisplayNameResult r)
     {
+        displayName.text = r.DisplayName;
         UpdateMsg("Display name updated!" + r.DisplayName);
     }
 
