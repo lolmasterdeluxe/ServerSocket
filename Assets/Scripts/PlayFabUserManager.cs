@@ -11,7 +11,7 @@ public class PlayFabUserManager : MonoBehaviour
     [SerializeField]
     private TMP_InputField reg_email, reg_username, reg_password, reg_confirm_password, login_email, login_password, update_displayName;
     [SerializeField]
-    private TextMeshProUGUI log, account_username, account_ID, displayName;
+    private TextMeshProUGUI account_username, account_ID, displayName;
 
     public void OnRegister()
     {
@@ -23,9 +23,9 @@ public class PlayFabUserManager : MonoBehaviour
             DisplayName = reg_username.text
         };
         if (reg_password.text == reg_confirm_password.text)
-            PlayFabClientAPI.RegisterPlayFabUser(registerRequest, OnRegSuccess, OnError);
+            PlayFabClientAPI.RegisterPlayFabUser(registerRequest, OnRegSuccess, DebugLogger.Instance.OnPlayfabError);
         else
-            UpdateMsg("Passwords do not match, please try again");
+            DebugLogger.Instance.LogText("Passwords do not match, please try again");
     }
 
     private void OnRegSuccess(RegisterPlayFabUserResult r)
@@ -37,7 +37,7 @@ public class PlayFabUserManager : MonoBehaviour
         registerPanel.SetActive(false);
         loginPanel.SetActive(true);
 
-        UpdateMsg("Registration success!");
+        DebugLogger.Instance.LogText("Registration success!");
     }
 
     public void OnLogin()
@@ -45,9 +45,14 @@ public class PlayFabUserManager : MonoBehaviour
         var loginRequest = new LoginWithEmailAddressRequest
         {
             Email = login_email.text,
-            Password = login_password.text
+            Password = login_password.text,
+            InfoRequestParameters = new GetPlayerCombinedInfoRequestParams
+            {
+                GetPlayerProfile = true,
+                GetUserAccountInfo = true,
+            }
         };
-        PlayFabClientAPI.LoginWithEmailAddress(loginRequest, OnLoginSuccess, OnError);
+        PlayFabClientAPI.LoginWithEmailAddress(loginRequest, OnLoginSuccess, DebugLogger.Instance.OnPlayfabError);
     }
 
     private void OnLoginSuccess(LoginResult r)
@@ -55,31 +60,17 @@ public class PlayFabUserManager : MonoBehaviour
         loginPanel.SetActive(false);
         menuPanel.SetActive(true);
 
-        var accountInfoRequest = new GetAccountInfoRequest
-        {
-            Email = login_email.text,
-        };
-        PlayFabClientAPI.GetAccountInfo(accountInfoRequest, GetAccountInfoSuccess, OnError);
+        account_username.text = "Logged in as: " + r.InfoResultPayload.AccountInfo.Username;
+        account_ID.text = "User ID: " + r.InfoResultPayload.AccountInfo.PlayFabId;
 
-        var displayNameRequest = new GetPlayerProfileRequest
-        {
-            PlayFabId = int.Parse(account_ID.text).ToString("X")
-        };
-        PlayFabClientAPI.GetPlayerProfile(displayNameRequest, GetDisplayNameSuccess, OnError);
-        
-        UpdateMsg("Login Success!");
-    }
+        displayName.text = r.InfoResultPayload.PlayerProfile.DisplayName;
+        update_displayName.text = r.InfoResultPayload.PlayerProfile.DisplayName;
 
-    private void GetAccountInfoSuccess(GetAccountInfoResult r)
-    {
-        account_username.text = "Logged in as: " + r.AccountInfo.Username;
-        account_ID.text = "User ID: " + r.AccountInfo.PlayFabId;
-    }
+        PlayerStats.username = r.InfoResultPayload.AccountInfo.Username;
+        PlayerStats.ID = r.InfoResultPayload.AccountInfo.PlayFabId;
+        PlayerStats.displayName = r.InfoResultPayload.PlayerProfile.DisplayName;
 
-    private void GetDisplayNameSuccess(GetPlayerProfileResult r)
-    {
-        displayName.text = r.PlayerProfile.DisplayName;
-        update_displayName.text = r.PlayerProfile.DisplayName;
+        DebugLogger.Instance.LogText("Login Success!");
     }
         
     public void OnLogout()
@@ -94,14 +85,14 @@ public class PlayFabUserManager : MonoBehaviour
     public void OnGuestLogin()
     {
         var request = new LoginWithCustomIDRequest { CustomId = "GettingStartedGuide", CreateAccount = true };
-        PlayFabClientAPI.LoginWithCustomID(request, OnGuestLoginSuccess, OnError);
+        PlayFabClientAPI.LoginWithCustomID(request, OnGuestLoginSuccess, DebugLogger.Instance.OnPlayfabError);
     }
 
     private void OnGuestLoginSuccess(LoginResult result)
     {
         loginPanel.SetActive(false);
         menuPanel.SetActive(true);
-        UpdateMsg("Congratulations, you made your first successful API call!");
+        DebugLogger.Instance.LogText("Congratulations, you made your first successful API call!");
     }
 
     public void UpdateDisplayName()
@@ -110,24 +101,12 @@ public class PlayFabUserManager : MonoBehaviour
         {
             DisplayName = update_displayName.text,
         };
-        PlayFabClientAPI.UpdateUserTitleDisplayName(updateDisplayNameRequest, OnDisplayNameUpdate, OnError);
+        PlayFabClientAPI.UpdateUserTitleDisplayName(updateDisplayNameRequest, OnDisplayNameUpdate, DebugLogger.Instance.OnPlayfabError);
     }
 
     private void OnDisplayNameUpdate(UpdateUserTitleDisplayNameResult r)
     {
         displayName.text = r.DisplayName;
-        UpdateMsg("Display name updated!" + r.DisplayName);
-    }
-
-    private void OnError(PlayFabError e)
-    {
-        //Debug.Log("Error"+e.GenerateErrorReport());
-        UpdateMsg("Error" + e.GenerateErrorReport());
-    }
-
-    private void UpdateMsg(string msg)
-    {
-        Debug.Log(msg);
-        log.text = msg;
+        DebugLogger.Instance.LogText("Display name updated!" + r.DisplayName);
     }
 }
