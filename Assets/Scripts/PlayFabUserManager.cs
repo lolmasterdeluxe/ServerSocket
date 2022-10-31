@@ -109,4 +109,19 @@ public class PlayFabUserManager : MonoBehaviour
         displayName.text = r.DisplayName;
         DebugLogger.Instance.LogText("Display name updated!" + r.DisplayName);
     }
+
+    public void OnResetPassword()
+    {
+        var accountRecoveryRequest = new SendAccountRecoveryEmailRequest
+        {
+            Email = login_email.text,
+            TitleId = PlayFabSettings.TitleId
+        };
+        PlayFabClientAPI.SendAccountRecoveryEmail(accountRecoveryRequest, OnResetPasswordSuccess, DebugLogger.Instance.OnPlayfabError);
+    }
+
+    private void OnResetPasswordSuccess(SendAccountRecoveryEmailResult r)
+    {
+        DebugLogger.Instance.LogText("Reset password sent");
+    }
 }
