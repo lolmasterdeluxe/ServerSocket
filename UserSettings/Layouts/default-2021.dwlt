@@ -19,7 +19,7 @@ MonoBehaviour:
     width: 1904
     height: 981
   m_ShowMode: 4
-  m_Title: Project
+  m_Title: GitHub
   m_RootView: {fileID: 6}
   m_MinSize: {x: 875, y: 300}
   m_MaxSize: {x: 10000, y: 10000}
@@ -48,7 +48,7 @@ MonoBehaviour:
   m_MinSize: {x: 503, y: 321}
   m_MaxSize: {x: 16192, y: 12117}
   vertical: 0
-  controlID: 87
+  controlID: 80
 --- !u!114 &3
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -224,7 +224,7 @@ MonoBehaviour:
   m_MinSize: {x: 403, y: 321}
   m_MaxSize: {x: 8096, y: 12117}
   vertical: 1
-  controlID: 1776
+  controlID: 16
 --- !u!114 &10
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -249,7 +249,7 @@ MonoBehaviour:
   m_MinSize: {x: 403, y: 221}
   m_MaxSize: {x: 8003, y: 4021}
   vertical: 0
-  controlID: 80
+  controlID: 17
 --- !u!114 &11
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -305,7 +305,7 @@ MonoBehaviour:
   m_OverlayCanvas:
     m_LastAppliedPresetName: Default
     m_SaveData: []
-  progressMessageClearTime: 10543.921059299999
+  progressMessageClearTime: 1968.004923
   notificationClearTime: -1
   timeSinceLastRotation: -1
   currentBranchAndRemoteHasUpdate: 0
@@ -461,13 +461,13 @@ MonoBehaviour:
     gitStatusEntries: []
     changedFilesText: No changed files
     lastCurrentBranchChangedEvent:
-      updatedTimeString: 2022-10-29T17:10:06.215+08:00
+      updatedTimeString: 2022-10-29T20:27:40.631+08:00
       cacheType: 1
     lastStatusEntriesChangedEvent:
-      updatedTimeString: 2022-10-29T17:10:08.450+08:00
+      updatedTimeString: 2022-10-29T21:00:04.638+08:00
       cacheType: 6
     lastLocksChangedEvent:
-      updatedTimeString: 2022-10-29T17:05:42.574+08:00
+      updatedTimeString: 2022-10-29T20:57:09.670+08:00
       cacheType: 7
   historyView:
     currentLogHasUpdate: 0
@@ -6938,13 +6938,13 @@ MonoBehaviour:
     m_Image: {fileID: 0}
     m_Tooltip: Url of the origin remote
   lastCurrentBranchAndRemoteChangedEvent:
-    updatedTimeString: 2022-10-29T17:10:06.215+08:00
+    updatedTimeString: 2022-10-29T20:27:40.631+08:00
     cacheType: 1
   lastTrackingStatusChangedEvent:
-    updatedTimeString: 2022-10-29T17:10:08.470+08:00
+    updatedTimeString: 2022-10-29T21:00:04.654+08:00
     cacheType: 5
   lastStatusEntriesChangedEvent:
-    updatedTimeString: 2022-10-29T17:10:08.450+08:00
+    updatedTimeString: 2022-10-29T21:00:04.638+08:00
     cacheType: 6
   pullButtonContent:
     m_Text: Pull
@@ -7022,9 +7022,9 @@ MonoBehaviour:
     m_IsLocked: 0
   m_FolderTreeState:
     scrollPos: {x: 0, y: 0}
-    m_SelectedIDs: 1e690000
-    m_LastClickedID: 26910
-    m_ExpandedIDs: 000000001050000000ca9a3bffffff7f
+    m_SelectedIDs: fc500000
+    m_LastClickedID: 20732
+    m_ExpandedIDs: 00000000ec50000000ca9a3bffffff7f
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -7052,7 +7052,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 0000000010500000
+    m_ExpandedIDs: 00000000ec500000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -7143,7 +7143,7 @@ MonoBehaviour:
     m_ControlHash: -371814159
     m_PrefName: Preview_InspectorPreview
   m_LastInspectedObjectInstanceID: -1
-  m_LastVerticalScrollValue: 0
+  m_LastVerticalScrollValue: 373
   m_GlobalObjectId: 
   m_InspectorMode: 0
   m_LockTracker:
@@ -7182,7 +7182,7 @@ MonoBehaviour:
       scrollPos: {x: 0, y: 0}
       m_SelectedIDs: 
       m_LastClickedID: 0
-      m_ExpandedIDs: 14f2fdff5817feff6817feff7417feff2cfbffff524e0000
+      m_ExpandedIDs: ce5dffff9c67ffff30fbffff6a4e0000ea4e0000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -7431,9 +7431,9 @@ MonoBehaviour:
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 875.94556, y: 521.51685, z: 23.262384}
+    m_Target: {x: 1025.9097, y: 599.0721, z: 32.01833}
     speed: 2
-    m_Value: {x: 875.94556, y: 521.51685, z: 23.262384}
+    m_Value: {x: 1025.9097, y: 599.0721, z: 32.01833}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -7484,9 +7484,9 @@ MonoBehaviour:
     speed: 2
     m_Value: {x: 0, y: 0, z: 0, w: 1}
   m_Size:
-    m_Target: 563.11707
+    m_Target: 633.5562
     speed: 2
-    m_Value: 563.11707
+    m_Value: 633.5562
   m_Ortho:
     m_Target: 1
     speed: 2

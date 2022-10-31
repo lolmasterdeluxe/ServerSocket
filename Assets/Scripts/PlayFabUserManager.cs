@@ -9,7 +9,7 @@ public class PlayFabUserManager : MonoBehaviour
     [SerializeField]
     private GameObject registerPanel, loginPanel, menuPanel;
     [SerializeField]
-    private TMP_InputField reg_email, reg_username, reg_password, reg_confirm_password, login_email, login_password, update_displayName;
+    private TMP_InputField reg_email, reg_username, reg_password, reg_confirm_password, login_email, login_password, update_displayName, recovery_email;
     [SerializeField]
     private TextMeshProUGUI account_username, account_ID, displayName;
 
@@ -114,7 +114,7 @@ public class PlayFabUserManager : MonoBehaviour
     {
         var accountRecoveryRequest = new SendAccountRecoveryEmailRequest
         {
-            Email = login_email.text,
+            Email = recovery_email.text,
             TitleId = PlayFabSettings.TitleId
         };
         PlayFabClientAPI.SendAccountRecoveryEmail(accountRecoveryRequest, OnResetPasswordSuccess, DebugLogger.Instance.OnPlayfabError);
