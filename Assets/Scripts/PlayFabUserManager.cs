@@ -2,6 +2,7 @@ using PlayFab;
 using PlayFab.ClientModels;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using TMPro;
 
 public class PlayFabUserManager : MonoBehaviour
@@ -123,5 +124,10 @@ public class PlayFabUserManager : MonoBehaviour
     private void OnResetPasswordSuccess(SendAccountRecoveryEmailResult r)
     {
         DebugLogger.Instance.LogText("Reset password sent");
+    }
+
+    public void SceneTransition(string sceneName)
+    {
+        SceneManager.LoadScene(sceneName);
     }
 }
