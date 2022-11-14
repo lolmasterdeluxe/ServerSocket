@@ -7,6 +7,8 @@ using TMPro;
 
 public class InventoryManager : MonoBehaviour
 {
+    [SerializeField]
+    private TextMeshProUGUI catalogText, inventoryText, moneyText;
     public void GetVirtualCurrencies()
     {
         PlayFabClientAPI.GetUserInventory(new GetUserInventoryRequest(),
@@ -14,6 +16,7 @@ public class InventoryManager : MonoBehaviour
         {
             int coins = r.VirtualCurrency["RM"]; // Replace CN with your currency
             DebugLogger.Instance.LogText("Coins: " + coins);
+            moneyText.text = "Coins: " + coins;
         }, DebugLogger.Instance.OnPlayfabError);
     }
 
@@ -28,9 +31,11 @@ public class InventoryManager : MonoBehaviour
         {
             List<CatalogItem> items = result.Catalog;
             DebugLogger.Instance.LogText("Catalog Items");
+            catalogText.text = "";
             foreach (CatalogItem i in items)
             {
                 DebugLogger.Instance.LogText(i.DisplayName + ", " + i.VirtualCurrencyPrices["RM"]);
+                catalogText.text += i.DisplayName + ": $" + i.VirtualCurrencyPrices["RM"];
             }
         }, DebugLogger.Instance.OnPlayfabError);
     }
@@ -42,9 +47,11 @@ public class InventoryManager : MonoBehaviour
         {
             List<ItemInstance> ii = result.Inventory;
             DebugLogger.Instance.LogText("Player Inventory");
+            inventoryText.text = "";
             foreach (ItemInstance i in ii)
             {
                 DebugLogger.Instance.LogText(i.DisplayName + "," + i.ItemId + "," + i.ItemInstanceId);
+                inventoryText.text += i.DisplayName + "," + i.ItemId + "," + i.ItemInstanceId;
             }
         }, DebugLogger.Instance.OnPlayfabError);
     }
