@@ -8,13 +8,15 @@ using TMPro;
 public class InventoryManager : MonoBehaviour
 {
     [SerializeField]
-    private TextMeshProUGUI catalogText, inventoryText, moneyText;
+    private TextMeshProUGUI inventoryText, moneyText;
+    [SerializeField]
+    private GameObject catalogContent, itemPrefab;
     public void GetVirtualCurrencies()
     {
         PlayFabClientAPI.GetUserInventory(new GetUserInventoryRequest(),
         r =>
         {
-            int coins = r.VirtualCurrency["RM"]; // Replace CN with your currency
+            int coins = r.VirtualCurrency["SG"]; // Replace CN with your currency
             DebugLogger.Instance.LogText("Coins: " + coins);
             moneyText.text = "Coins: " + coins;
         }, DebugLogger.Instance.OnPlayfabError);
@@ -26,16 +28,22 @@ public class InventoryManager : MonoBehaviour
         {
             CatalogVersion = "1.0" //update catalog names
         };
+        for (int i = 0; i < catalogContent.transform.childCount; ++i)
+        {
+            if (catalogContent.transform.GetChild(i) != null)
+                Destroy(catalogContent.transform.GetChild(i));
+        }
         PlayFabClientAPI.GetCatalogItems(catreq,
         result =>
         {
             List<CatalogItem> items = result.Catalog;
             DebugLogger.Instance.LogText("Catalog Items");
-            catalogText.text = "";
             foreach (CatalogItem i in items)
             {
-                DebugLogger.Instance.LogText(i.DisplayName + ", " + i.VirtualCurrencyPrices["RM"]);
-                catalogText.text += i.DisplayName + ": $" + i.VirtualCurrencyPrices["RM"];
+                GameObject catalogItem = Instantiate(itemPrefab, catalogContent.transform);
+                catalogItem.GetComponent<BuyItem>().SetItemStats(i.CatalogVersion, i.ItemId, "SG", i.VirtualCurrencyPrices["SG"]);
+                catalogItem.GetComponent<TextMeshProUGUI>().text = i.DisplayName + ", $" + i.VirtualCurrencyPrices["SG"];
+                DebugLogger.Instance.LogText(i.DisplayName + ", " + i.VirtualCurrencyPrices["SG"]);
             }
         }, DebugLogger.Instance.OnPlayfabError);
     }
@@ -51,23 +59,10 @@ public class InventoryManager : MonoBehaviour
             foreach (ItemInstance i in ii)
             {
                 DebugLogger.Instance.LogText(i.DisplayName + "," + i.ItemId + "," + i.ItemInstanceId);
-                inventoryText.text += i.DisplayName + "," + i.ItemId + "," + i.ItemInstanceId;
+                inventoryText.text += i.DisplayName + "," + i.ItemId + "," + i.ItemInstanceId + "\n";
             }
         }, DebugLogger.Instance.OnPlayfabError);
     }
 
-    public void BuyItem()
-    {
-        var buyreq = new PurchaseItemRequest
-        {
-            // Current sample is hardcoded, should make it more dynamic
-            CatalogVersion = "1.0",
-            ItemId = "WEP001",
-            VirtualCurrency = "RM",
-            Price = 2
-        };
-        PlayFabClientAPI.PurchaseItem(buyreq,
-            result => { DebugLogger.Instance.LogText("Bought!"); }, 
-            DebugLogger.Instance.OnPlayfabError);
-    }
+    
 }
