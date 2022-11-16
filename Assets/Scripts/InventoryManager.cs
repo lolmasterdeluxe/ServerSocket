@@ -30,8 +30,8 @@ public class InventoryManager : MonoBehaviour
         };
         for (int i = 0; i < catalogContent.transform.childCount; ++i)
         {
-            if (catalogContent.transform.GetChild(i) != null)
-                Destroy(catalogContent.transform.GetChild(i));
+            if (catalogContent.transform.GetChild(i).gameObject != null)
+                Destroy(catalogContent.transform.GetChild(i).gameObject);
         }
         PlayFabClientAPI.GetCatalogItems(catreq,
         result =>
