@@ -11,7 +11,7 @@ public class FriendManager : MonoBehaviour
     [SerializeField] 
     private TextMeshProUGUI friendList;
     [SerializeField]
-    private TMP_InputField tgtFriend, tgtUnfriend;
+    private TMP_InputField addFriendText, unfriendText;
     private List<FriendInfo> _friends = null;
 
     public enum FriendIdType { PlayFabId, Username, Email, DisplayName };
@@ -69,7 +69,7 @@ public class FriendManager : MonoBehaviour
 
     public void OnAddFriend() // To add friend based on display name
     {
-        AddFriend(FriendIdType.DisplayName, tgtFriend.text);
+        AddFriend(FriendIdType.DisplayName, addFriendText.text);
     }
 
     // unlike AddFriend, RemoveFriend only takes a PlayFab ID
@@ -87,7 +87,7 @@ public class FriendManager : MonoBehaviour
 
     public void OnUnfriend()
     {
-        RemoveFriend(tgtUnfriend.text);
+        RemoveFriend(unfriendText.text);
     }
 
     private void RemoveFriend(string pfid)

@@ -1,0 +1,24 @@
+fileFormatVersion: 2
+guid: 9af84c9448d5a7e4085d9d5658d24274
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Cooper
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 23025d0c113276e4db8db180b7638116, type: 3}
+  - {fileID: 12800000, guid: 46d2cb54258747a4290158e8cacfdd19, type: 3}
+  - {fileID: 12800000, guid: 246577ab94585f440909ae9394a8254f, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

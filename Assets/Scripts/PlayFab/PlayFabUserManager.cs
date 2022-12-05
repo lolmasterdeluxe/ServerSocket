@@ -58,20 +58,21 @@ public class PlayFabUserManager : MonoBehaviour
 
     private void OnLoginSuccess(LoginResult r)
     {
-        loginPanel.SetActive(false);
+        /*loginPanel.SetActive(false);
         menuPanel.SetActive(true);
 
         account_username.text = "Logged in as: " + r.InfoResultPayload.AccountInfo.Username;
         account_ID.text = "User ID: " + r.InfoResultPayload.AccountInfo.PlayFabId;
 
         displayName.text = r.InfoResultPayload.PlayerProfile.DisplayName;
-        update_displayName.text = r.InfoResultPayload.PlayerProfile.DisplayName;
+        update_displayName.text = r.InfoResultPayload.PlayerProfile.DisplayName;*/
 
         PlayerStats.username = r.InfoResultPayload.AccountInfo.Username;
         PlayerStats.ID = r.InfoResultPayload.AccountInfo.PlayFabId;
         PlayerStats.displayName = r.InfoResultPayload.PlayerProfile.DisplayName;
 
         DebugLogger.Instance.LogText("Login Success!");
+        SceneTransition("Landing");
     }
         
     public void OnLogout()
@@ -85,14 +86,15 @@ public class PlayFabUserManager : MonoBehaviour
 
     public void OnGuestLogin()
     {
-        var request = new LoginWithCustomIDRequest { CustomId = "GettingStartedGuide", CreateAccount = true };
+        var request = new LoginWithCustomIDRequest { CustomId = "RandomCustomID", CreateAccount = true };
         PlayFabClientAPI.LoginWithCustomID(request, OnGuestLoginSuccess, DebugLogger.Instance.OnPlayfabError);
     }
 
     private void OnGuestLoginSuccess(LoginResult result)
     {
-        loginPanel.SetActive(false);
-        menuPanel.SetActive(true);
+        /*loginPanel.SetActive(false);
+        menuPanel.SetActive(true);*/
+        SceneTransition("Landing");
         DebugLogger.Instance.LogText("Congratulations, you made your first successful API call!");
     }
 

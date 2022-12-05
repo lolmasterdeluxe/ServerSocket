@@ -10,7 +10,7 @@ public class PlayFabDataManager : MonoBehaviour
     [SerializeField]
     private TMP_InputField newScore, xpInputField, levelInputField;
     [SerializeField]
-    private TextMeshProUGUI leaderboardText;
+    private TextMeshProUGUI leaderboardText, accountIDText, displayNameText;
 
     public void OnGetLeaderboard()
     {
@@ -112,4 +112,17 @@ public class PlayFabDataManager : MonoBehaviour
             DebugLogger.Instance.LogText(error.GenerateErrorReport());
         });
     }
+
+    public void OnDisplayProfileDetails()
+    {
+        accountIDText.text = PlayerStats.ID;
+        displayNameText.text = PlayerStats.displayName;
+    }
+}
+
+public static class PlayerStats
+{
+    public static string username = "";
+    public static string ID = "";
+    public static string displayName = "";
 }
