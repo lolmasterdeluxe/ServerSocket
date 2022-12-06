@@ -2437,7 +2437,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Email does not exist
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a2878d3a2241b6141bdf5a0c364ece48, type: 2}
   m_sharedMaterial: {fileID: 3963515417004955349, guid: a2878d3a2241b6141bdf5a0c364ece48, type: 2}
@@ -2530,7 +2530,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &206964887
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2544,9 +2544,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inventoryText: {fileID: 1789139445}
-  moneyText: {fileID: 828880834}
+  shopMoneyText: {fileID: 0}
   catalogContent: {fileID: 1231402771}
-  itemPrefab: {fileID: 5118197530156303493, guid: 96433b96246cae04fb71a6b67ae65431, type: 3}
+  inventoryContent: {fileID: 0}
+  shopItemPrefab: {fileID: 0}
+  inventoryItemPrefab: {fileID: 0}
+  itemIcons: []
 --- !u!4 &206964888
 Transform:
   m_ObjectHideFlags: 0
@@ -8295,7 +8298,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Incorrect Password
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a2878d3a2241b6141bdf5a0c364ece48, type: 2}
   m_sharedMaterial: {fileID: 3963515417004955349, guid: a2878d3a2241b6141bdf5a0c364ece48, type: 2}
@@ -9830,7 +9833,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Incorrect Password
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a2878d3a2241b6141bdf5a0c364ece48, type: 2}
   m_sharedMaterial: {fileID: 3963515417004955349, guid: a2878d3a2241b6141bdf5a0c364ece48, type: 2}
@@ -18544,7 +18547,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1850982431
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19126,6 +19129,9 @@ MonoBehaviour:
   account_username: {fileID: 275095852}
   account_ID: {fileID: 1403706962}
   displayName: {fileID: 382368582}
+  loginErrorMessage: {fileID: 781737568}
+  registerErrorMessage: {fileID: 950406995}
+  recoveryErrorMessage: {fileID: 193843884}
 --- !u!114 &1895324618
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19142,6 +19148,8 @@ MonoBehaviour:
   xpInputField: {fileID: 2140394801}
   levelInputField: {fileID: 844902483}
   leaderboardText: {fileID: 1110488757}
+  accountIDText: {fileID: 0}
+  displayNameText: {fileID: 0}
 --- !u!114 &1895324619
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20039,7 +20047,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &2033654188
 MonoBehaviour:
   m_ObjectHideFlags: 0

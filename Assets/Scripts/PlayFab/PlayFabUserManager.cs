@@ -12,7 +12,7 @@ public class PlayFabUserManager : MonoBehaviour
     [SerializeField]
     private TMP_InputField reg_email, reg_username, reg_password, reg_confirm_password, login_email, login_password, update_displayName, recovery_email;
     [SerializeField]
-    private TextMeshProUGUI account_username, account_ID, displayName;
+    private TextMeshProUGUI account_username, account_ID, displayName, loginErrorMessage, registerErrorMessage, recoveryErrorMessage;
 
     public void OnRegister()
     {
@@ -24,9 +24,20 @@ public class PlayFabUserManager : MonoBehaviour
             DisplayName = reg_username.text
         };
         if (reg_password.text == reg_confirm_password.text)
-            PlayFabClientAPI.RegisterPlayFabUser(registerRequest, OnRegSuccess, DebugLogger.Instance.OnPlayfabError);
+        {
+            PlayFabClientAPI.RegisterPlayFabUser(registerRequest, OnRegSuccess, OnRegisterError);
+        }
         else
+        {
             DebugLogger.Instance.LogText("Passwords do not match, please try again");
+            registerErrorMessage.text = "Passwords do not match, please try again";
+        }
+    }
+
+    private void OnRegisterError(PlayFabError e)
+    {
+        registerErrorMessage.text = e.ErrorMessage;
+        DebugLogger.Instance.LogText(e.GenerateErrorReport());
     }
 
     private void OnRegSuccess(RegisterPlayFabUserResult r)
@@ -53,7 +64,13 @@ public class PlayFabUserManager : MonoBehaviour
                 GetUserAccountInfo = true,
             }
         };
-        PlayFabClientAPI.LoginWithEmailAddress(loginRequest, OnLoginSuccess, DebugLogger.Instance.OnPlayfabError);
+        PlayFabClientAPI.LoginWithEmailAddress(loginRequest, OnLoginSuccess, OnLoginError);
+    }
+
+    private void OnLoginError(PlayFabError e)
+    {
+        loginErrorMessage.text = e.ErrorMessage;
+        DebugLogger.Instance.LogText(e.GenerateErrorReport());
     }
 
     private void OnLoginSuccess(LoginResult r)
@@ -74,14 +91,11 @@ public class PlayFabUserManager : MonoBehaviour
         DebugLogger.Instance.LogText("Login Success!");
         SceneTransition("Landing");
     }
-        
+
     public void OnLogout()
     {
         PlayFabClientAPI.ForgetAllCredentials();
-        login_email.text = "";
-        login_password.text = "";
-        account_username.text = "";
-        account_ID.text = "";
+        SceneTransition("MainGame");
     }
 
     public void OnGuestLogin()
@@ -120,12 +134,19 @@ public class PlayFabUserManager : MonoBehaviour
             Email = recovery_email.text,
             TitleId = PlayFabSettings.TitleId
         };
-        PlayFabClientAPI.SendAccountRecoveryEmail(accountRecoveryRequest, OnResetPasswordSuccess, DebugLogger.Instance.OnPlayfabError);
+        PlayFabClientAPI.SendAccountRecoveryEmail(accountRecoveryRequest, OnResetPasswordSuccess, OnResetPasswordError);
+    }
+
+    private void OnResetPasswordError(PlayFabError e)
+    {
+        recoveryErrorMessage.text = e.ErrorMessage;
+        DebugLogger.Instance.LogText(e.GenerateErrorReport());
     }
 
     private void OnResetPasswordSuccess(SendAccountRecoveryEmailResult r)
     {
         DebugLogger.Instance.LogText("Reset password sent");
+        registerErrorMessage.text = "Email to reset password has been sent.";
     }
 
     public void SceneTransition(string sceneName)
