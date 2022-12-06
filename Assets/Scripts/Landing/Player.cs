@@ -23,6 +23,7 @@ public class Player : MonoBehaviourPunCallbacks
     private GameObject eButton;
 
     private InventoryManager inventoryManager;
+    private PlayFabDataManager playFabDataManager;
 
     public bool isOffline = false;
 
@@ -55,6 +56,7 @@ public class Player : MonoBehaviourPunCallbacks
         eButton = GameObject.Find("EButton");
 
         inventoryManager = FindObjectOfType<InventoryManager>();
+        playFabDataManager = FindObjectOfType<PlayFabDataManager>();
 
         canMove = true;
         eButton.SetActive(false);
@@ -87,6 +89,9 @@ public class Player : MonoBehaviourPunCallbacks
 
                         case CONTACT_TYPE.LEADERBOARD:
                             leaderPanel.GetComponent<LeaderboardController>().OpenPanel(ClosePanel);
+                            playFabDataManager.OnGetLeaderboard();
+                            playFabDataManager.OnGetLeaderboardAroundPlayer();
+                            playFabDataManager.OnGetFriendsLeaderboard();
                             break;
 
                         case CONTACT_TYPE.GUILD:

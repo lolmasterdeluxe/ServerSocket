@@ -11,6 +11,10 @@ public class PlayFabDataManager : MonoBehaviour
     private TMP_InputField newScore, xpInputField, levelInputField;
     [SerializeField]
     private TextMeshProUGUI leaderboardText, accountIDText, displayNameText;
+    [SerializeField]
+    private GameObject globalLeaderboard, localLeaderboard, friendsLeaderboard, playerRankPrefab;
+    [SerializeField]
+    private Image globalButton, localButton, friendsButton;
 
     public void OnGetLeaderboard()
     {
@@ -18,25 +22,63 @@ public class PlayFabDataManager : MonoBehaviour
         {
             StatisticName = "Highscore", // playfab leaderboard statistic name
             StartPosition = 0,
-            MaxResultsCount = 10,
+            MaxResultsCount = 100,
         };
         PlayFabClientAPI.GetLeaderboard(lbreq, OnGetLeaderboardSuccess, DebugLogger.Instance.OnPlayfabError);
     }
 
+    public void OnGetLeaderboardAroundPlayer()
+    {
+        var lbreq = new GetLeaderboardAroundPlayerRequest
+        {
+            StatisticName = "Highscore", // playfab leaderboard statistic name
+            MaxResultsCount = 10,
+        };
+        PlayFabClientAPI.GetLeaderboardAroundPlayer(lbreq, OnGetLeaderboardAroundPlayerSuccess, DebugLogger.Instance.OnPlayfabError);
+    }
+
+    public void OnGetFriendsLeaderboard()
+    {
+        var lbreq = new GetFriendLeaderboardRequest
+        {
+            StatisticName = "Highscore", // playfab leaderboard statistic name
+            MaxResultsCount = 100,
+        };
+        PlayFabClientAPI.GetFriendLeaderboard(lbreq, OnGetFriendLeaderboardSuccess, DebugLogger.Instance.OnPlayfabError);
+    }
+
+
     private void OnGetLeaderboardSuccess(GetLeaderboardResult r)
     {
-        string leaderboardString = "Leaderboard:\n";
         foreach (var item in r.Leaderboard)
         {
-            string onerow = item.Position + " / " + item.PlayFabId + " / " + item.DisplayName + " / " + item.StatValue + "\n";
-            leaderboardString += onerow;
-            if (item.PlayFabId == PlayerStats.ID)
-            {
-                newScore.text = item.StatValue.ToString();
-            }
+            GameObject playerRank = Instantiate(playerRankPrefab, globalLeaderboard.transform);
+            RankManager playerRankManager = playerRank.GetComponent<RankManager>();
+
+            playerRankManager.SetPlayerLeaderboardStats(item.Position, item.DisplayName, item.StatValue);
         }
-        DebugLogger.Instance.LogText(leaderboardString);
-        leaderboardText.text = leaderboardString;
+    }
+
+    private void OnGetLeaderboardAroundPlayerSuccess(GetLeaderboardAroundPlayerResult r)
+    {
+        foreach (var item in r.Leaderboard)
+        {
+            GameObject playerRank = Instantiate(playerRankPrefab, localLeaderboard.transform);
+            RankManager playerRankManager = playerRank.GetComponent<RankManager>();
+
+            playerRankManager.SetPlayerLeaderboardStats(item.Position, item.DisplayName, item.StatValue);
+        }
+    }
+
+    private void OnGetFriendLeaderboardSuccess(GetLeaderboardResult r)
+    {
+        foreach (var item in r.Leaderboard)
+        {
+            GameObject playerRank = Instantiate(playerRankPrefab, friendsLeaderboard.transform);
+            RankManager playerRankManager = playerRank.GetComponent<RankManager>();
+
+            playerRankManager.SetPlayerLeaderboardStats(item.Position, item.DisplayName, item.StatValue);
+        }
     }
 
     public void OnLeaderboardUpdate()
@@ -60,6 +102,46 @@ public class PlayFabDataManager : MonoBehaviour
     {
         DebugLogger.Instance.LogText("Successful leaderboard sent: " + r.ToString());
         OnGetLeaderboard();
+    }
+
+    public void ClearLeaderboards()
+    {
+        for (int i = 0; i < globalLeaderboard.transform.childCount; ++i)
+        {
+            Destroy(globalLeaderboard.transform.GetChild(i).gameObject);
+        }
+
+        for (int i = 0; i < localLeaderboard.transform.childCount; ++i)
+        {
+            Destroy(localLeaderboard.transform.GetChild(i).gameObject);
+        }
+
+        for (int i = 0; i < friendsLeaderboard.transform.childCount; ++i)
+        {
+            Destroy(friendsLeaderboard.transform.GetChild(i).gameObject);
+        }
+    }
+
+    public void LeaderboardButtonSelect(string leaderboardType)
+    {
+        if (leaderboardType == "local")
+        {
+            localButton.color = new Color32(255, 255, 255, 255);
+            globalButton.color = new Color32(200, 200, 200, 128);
+            friendsButton.color = new Color32(200, 200, 200, 128);
+        }
+        else if (leaderboardType == "global")
+        {
+            localButton.color = new Color32(200, 200, 200, 128);
+            globalButton.color = new Color32(255, 255, 255, 255);
+            friendsButton.color = new Color32(200, 200, 200, 128);
+        }
+        else if (leaderboardType == "friends")
+        {
+            localButton.color = new Color32(200, 200, 200, 128);
+            globalButton.color = new Color32(200, 200, 200, 128);
+            friendsButton.color = new Color32(255, 255, 255, 255);
+        }
     }
 
     public void OnClientGetTitleData()
