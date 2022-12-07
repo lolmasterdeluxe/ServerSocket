@@ -57,7 +57,6 @@ public class Player : MonoBehaviourPunCallbacks
 
         inventoryManager = FindObjectOfType<InventoryManager>();
         playFabDataManager = FindObjectOfType<PlayFabDataManager>();
-
         canMove = true;
         eButton.SetActive(false);
     }

@@ -62,6 +62,7 @@ public class PlayFabUserManager : MonoBehaviour
             {
                 GetPlayerProfile = true,
                 GetUserAccountInfo = true,
+                GetPlayerStatistics = true
             }
         };
         PlayFabClientAPI.LoginWithEmailAddress(loginRequest, OnLoginSuccess, OnLoginError);
@@ -87,6 +88,13 @@ public class PlayFabUserManager : MonoBehaviour
         PlayerStats.username = r.InfoResultPayload.AccountInfo.Username;
         PlayerStats.ID = r.InfoResultPayload.AccountInfo.PlayFabId;
         PlayerStats.displayName = r.InfoResultPayload.PlayerProfile.DisplayName;
+
+        foreach (var item in r.InfoResultPayload.PlayerStatistics)
+        {
+            if (item.StatisticName == "Highscore")
+                PlayerStats.highscore = item.Value;
+            DebugLogger.Instance.LogText("PlayerStats.highscore: " + PlayerStats.highscore);
+        }
 
         DebugLogger.Instance.LogText("Login Success!");
         SceneTransition("Landing");

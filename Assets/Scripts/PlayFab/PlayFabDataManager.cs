@@ -8,9 +8,9 @@ using TMPro;
 public class PlayFabDataManager : MonoBehaviour
 {
     [SerializeField]
-    private TMP_InputField newScore, xpInputField, levelInputField;
+    private TMP_InputField xpInputField, levelInputField;
     [SerializeField]
-    private TextMeshProUGUI leaderboardText, accountIDText, displayNameText;
+    private TextMeshProUGUI accountIDText, displayNameText;
     [SerializeField]
     private GameObject globalLeaderboard, localLeaderboard, friendsLeaderboard, playerRankPrefab;
     [SerializeField]
@@ -81,7 +81,7 @@ public class PlayFabDataManager : MonoBehaviour
         }
     }
 
-    public void OnLeaderboardUpdate()
+    public void OnScoreUpdate()
     {
         var req = new UpdatePlayerStatisticsRequest
         {
@@ -90,18 +90,17 @@ public class PlayFabDataManager : MonoBehaviour
                 new StatisticUpdate
                 {
                     StatisticName = "Highscore",
-                    Value = int.Parse(newScore.text)
+                    Value = PlayerStats.highscore
                 }
             }
         };
-        DebugLogger.Instance.LogText("Submitting score: " + newScore.text);
-        PlayFabClientAPI.UpdatePlayerStatistics(req, OnLeaderboardUpdateSuccess, DebugLogger.Instance.OnPlayfabError);
+        DebugLogger.Instance.LogText("Submitting score: " + PlayerStats.highscore);
+        PlayFabClientAPI.UpdatePlayerStatistics(req, OnScoreUpdateSuccess, DebugLogger.Instance.OnPlayfabError);
     }
 
-    private void OnLeaderboardUpdateSuccess(UpdatePlayerStatisticsResult r)
+    private void OnScoreUpdateSuccess(UpdatePlayerStatisticsResult r)
     {
         DebugLogger.Instance.LogText("Successful leaderboard sent: " + r.ToString());
-        OnGetLeaderboard();
     }
 
     public void ClearLeaderboards()
@@ -207,4 +206,5 @@ public static class PlayerStats
     public static string username = "";
     public static string ID = "";
     public static string displayName = "";
+    public static int highscore = 0;
 }

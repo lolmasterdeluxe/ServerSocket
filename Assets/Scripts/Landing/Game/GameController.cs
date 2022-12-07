@@ -9,8 +9,12 @@ public class GameController : MonoBehaviour
     public static GameController instance = null;
     public GameObject gameOverObject;
     
-    public TextMeshProUGUI scoreText;
-    public TextMeshProUGUI highScoreText;
+    [SerializeField]
+    private TextMeshProUGUI scoreText;
+    [SerializeField]
+    private TextMeshProUGUI highScoreText;
+    [SerializeField]
+    private TextMeshProUGUI finalScoreText;
 
     public int difficultyMax = 5;
 
@@ -18,9 +22,11 @@ public class GameController : MonoBehaviour
     public bool isGameOver = false;
     public float scrollSpeed = -2.5f;
 
-    public int columnScore = 1;
-    private int score = 0;
-    private int highestScore = 0;
+    public int columnScore = 10;
+    private int currentScore = 0;
+
+    [SerializeField]
+    private PlayFabDataManager playFabDataManager;
 
     private void Awake()
     {
@@ -33,20 +39,9 @@ public class GameController : MonoBehaviour
             Destroy(gameObject);
         }
 
-        LoadHighScore();
+        highScoreText.text = PlayerStats.highscore.ToString();
+        finalScoreText.text = PlayerStats.highscore.ToString();
         scoreText.text = "0";
-    }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
     }
 
     public void ResetGame()
@@ -63,6 +58,8 @@ public class GameController : MonoBehaviour
     public void GameOver()
     {
         gameOverObject.SetActive(true);
+        scoreText.gameObject.SetActive(false);
+        highScoreText.gameObject.SetActive(false);
         isGameOver = true;
     }
 
@@ -72,28 +69,15 @@ public class GameController : MonoBehaviour
         if (isGameOver)
             return;
 
-        score += value;
-        scoreText.text = score.ToString();
+        currentScore += value;
+        scoreText.text = currentScore.ToString();
 
-        if(score >= highestScore)
+        if (currentScore >= PlayerStats.highscore)
         {
-            SaveHighScore(score);
-        }
-    }
-
-    private void SaveHighScore(int score)
-    {
-        highestScore = score;
-        PlayerPrefs.SetInt("highestScore", highestScore);
-        highScoreText.text = highestScore.ToString();
-    }
-
-    private void LoadHighScore()
-    {
-        if(PlayerPrefs.HasKey("highestScore"))
-        {
-            highestScore = PlayerPrefs.GetInt("highestScore");
-            highScoreText.text = highestScore.ToString();
+            PlayerStats.highscore = currentScore;
+            playFabDataManager.OnScoreUpdate();
+            highScoreText.text = PlayerStats.highscore.ToString();
+            finalScoreText.text = PlayerStats.highscore.ToString();
         }
     }
 }
