@@ -45,10 +45,3 @@ public class SkillBoxManager : MonoBehaviour
     }
 
 }
-
-[System.Serializable]
-public class JSListWrapper<T> // Wrap JSON to list
-{
-    public List<T> list;
-    public JSListWrapper(List<T> list) => this.list = list;
-}

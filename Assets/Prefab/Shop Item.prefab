@@ -540,8 +540,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1609071980638094117}
-        m_TargetAssemblyTypeName: BuyItem, Assembly-CSharp
-        m_MethodName: BuyItemRequest
+        m_TargetAssemblyTypeName: ItemManager, Assembly-CSharp
+        m_MethodName: Confirmation
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

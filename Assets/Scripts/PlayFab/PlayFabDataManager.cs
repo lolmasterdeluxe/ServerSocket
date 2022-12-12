@@ -8,13 +8,27 @@ using TMPro;
 public class PlayFabDataManager : MonoBehaviour
 {
     [SerializeField]
-    private TMP_InputField xpInputField, levelInputField;
+    private TMP_InputField xpInputField, levelInputField, displayNameInputField;
     [SerializeField]
-    private TextMeshProUGUI accountIDText, displayNameText;
+    private TextMeshProUGUI accountIDText, displayNameText, MOTDText;
     [SerializeField]
     private GameObject globalLeaderboard, localLeaderboard, friendsLeaderboard, playerRankPrefab;
     [SerializeField]
     private Image globalButton, localButton, friendsButton;
+    [SerializeField]
+    private float MOTDAnimSpeed = 1, MOTDAnimTimer = 10;
+    private float MOTDAnimDelay = 10;
+    private bool MOTDBroadcasted = false;
+
+    private void Start()
+    {
+        OnClientGetTitleData();
+    }
+
+    private void Update()
+    {
+        AnimateMOTD();
+    }
 
     public void OnGetLeaderboard()
     {
@@ -147,8 +161,13 @@ public class PlayFabDataManager : MonoBehaviour
     {
         PlayFabClientAPI.GetTitleData(new GetTitleDataRequest(),
             result => {
-                if (result.Data == null || !result.Data.ContainsKey("MOTD")) Debug.Log("No MOTD");
-                else DebugLogger.Instance.LogText("MOTD: " + result.Data["MOTD"]);
+                if
+                    (result.Data == null || !result.Data.ContainsKey("MOTD")) Debug.Log("No MOTD");
+                else
+                {
+                    DebugLogger.Instance.LogText("MOTD: " + result.Data["MOTD"]);
+                    MOTDText.text = result.Data["MOTD"];
+                }
             },
             error => {
                 DebugLogger.Instance.LogText("Got error getting titleData:");
@@ -196,8 +215,45 @@ public class PlayFabDataManager : MonoBehaviour
 
     public void OnDisplayProfileDetails()
     {
-        accountIDText.text = PlayerStats.ID;
+        accountIDText.text = PlayerStats.ID.Substring(0, 9);
         displayNameText.text = PlayerStats.displayName;
+        displayNameInputField.text = PlayerStats.displayName;
+    }
+
+    public void UpdateDisplayName()
+    {
+        var updateDisplayNameRequest = new UpdateUserTitleDisplayNameRequest
+        {
+            DisplayName = displayNameInputField.text,
+        };
+        PlayFabClientAPI.UpdateUserTitleDisplayName(updateDisplayNameRequest, OnDisplayNameUpdate, DebugLogger.Instance.OnPlayfabError);
+    }
+
+    private void OnDisplayNameUpdate(UpdateUserTitleDisplayNameResult r)
+    {
+        displayNameText.text = r.DisplayName;
+        PlayerStats.displayName = r.DisplayName;
+        DebugLogger.Instance.LogText("Display name updated!" + r.DisplayName);
+    }
+
+    private void AnimateMOTD()
+    {
+        if (MOTDBroadcasted)
+            MOTDAnimDelay -= Time.deltaTime;
+
+        RectTransform MOTDRect = MOTDText.GetComponent<RectTransform>();
+        float newPosition = MOTDRect.anchoredPosition.x - MOTDAnimSpeed * Time.deltaTime;
+        MOTDRect.anchoredPosition = new Vector2(newPosition, MOTDRect.anchoredPosition.y);
+
+        if (MOTDRect.anchoredPosition.x <= -1920)
+            MOTDBroadcasted = true;
+
+        if (MOTDAnimDelay <= 0)
+        {
+            MOTDAnimDelay = MOTDAnimTimer;
+            MOTDBroadcasted = false;
+            MOTDRect.anchoredPosition = new Vector2(1920, MOTDRect.anchoredPosition.y);
+        }
     }
 }
 
@@ -207,4 +263,5 @@ public static class PlayerStats
     public static string ID = "";
     public static string displayName = "";
     public static int highscore = 0;
+    public static List<Item> equippedItems = new List<Item>();
 }

@@ -11,10 +11,13 @@ public class InventoryManager : MonoBehaviour
     [SerializeField]
     private TextMeshProUGUI inventoryText, shopMoneyText;
     [SerializeField]
-    private GameObject catalogContent, inventoryContent, shopItemPrefab, inventoryItemPrefab;
+    private GameObject catalogContent, inventoryContent, shopItemPrefab, inventoryItemPrefab, confirmationPanel, outcomePanel;
     [SerializeField]
     private List<Sprite> itemIcons;
     private Sprite itemIcon;
+    public List<Item> shopItems;
+    private string catalogVersion, itemId, virtualCurrency;
+    private int price;
 
     public void GetVirtualCurrencies()
     {
@@ -56,10 +59,10 @@ public class InventoryManager : MonoBehaviour
             foreach (CatalogItem i in items)
             {
                 GameObject catalogItem = Instantiate(shopItemPrefab, catalogContent.transform);
-                catalogItem.GetComponent<ItemManager>().SetItemStats(i.CatalogVersion, i.ItemId, "SG", i.VirtualCurrencyPrices["SG"]);
+                catalogItem.GetComponent<ShopItemManager>().SetItemStats(i.CatalogVersion, i.ItemId, "SG", i.VirtualCurrencyPrices["SG"]);
                 SetIcon(i);
-                catalogItem.GetComponent<ItemManager>().SetItemVisuals(i.DisplayName, i.ItemClass, itemIcon);
-                catalogItem.GetComponent<ItemManager>().SetItemPrice();
+                catalogItem.GetComponent<ShopItemManager>().SetItemVisuals(i.DisplayName, i.ItemClass, itemIcon);
+                catalogItem.GetComponent<ShopItemManager>().SetItemPrice();
                 DebugLogger.Instance.LogText(i.DisplayName + ", " + i.VirtualCurrencyPrices["SG"]);
             }
         }, DebugLogger.Instance.OnPlayfabError);
@@ -77,14 +80,14 @@ public class InventoryManager : MonoBehaviour
             {
                 GameObject inventoryItem = Instantiate(inventoryItemPrefab, inventoryContent.transform);
                 SetIcon(i);
-                ItemManager inventoryItemManager = inventoryItem.GetComponent<ItemManager>();
+                InventoryItemManager inventoryItemManager = inventoryItem.GetComponent<InventoryItemManager>();
                 inventoryItemManager.itemId = i.ItemId;
                 inventoryItemManager.SetItemVisuals(i.DisplayName, i.ItemClass, itemIcon);
 
                 int tempCount = 0;
                 for (int k = 0; k < inventoryContent.transform.childCount; ++k)
                 {
-                    ItemManager itemManagerChild = inventoryContent.transform.GetChild(k).GetComponent<ItemManager>();
+                    InventoryItemManager itemManagerChild = inventoryContent.transform.GetChild(k).GetComponent<InventoryItemManager>();
                     if (inventoryItemManager.itemId == itemManagerChild.itemId)
                     {
                         tempCount++;
@@ -98,6 +101,42 @@ public class InventoryManager : MonoBehaviour
             }
 
         }, DebugLogger.Instance.OnPlayfabError);
+    }
+
+    public void ConfirmPurchase(string itemName, string catalogVersion, string itemId, string virtualCurrency, int price)
+    {
+        this.catalogVersion = catalogVersion;
+        this.itemId = itemId;
+        this.virtualCurrency = virtualCurrency;
+        this.price = price;
+        confirmationPanel.SetActive(true);
+        confirmationPanel.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "Confirm purchase of <color=yellow>" + itemName +
+            "?</color>";
+    }
+
+    public void BuyItemRequest()
+    {
+        var buyreq = new PurchaseItemRequest
+        {
+            CatalogVersion = catalogVersion,
+            ItemId = itemId,
+            VirtualCurrency = virtualCurrency,
+            Price = price
+        };
+        PlayFabClientAPI.PurchaseItem(buyreq,
+            result =>
+            {
+                DebugLogger.Instance.LogText("Bought!");
+                GetVirtualCurrencies();
+                outcomePanel.SetActive(true);
+                outcomePanel.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "Purchase successful!";
+            },
+            error =>
+            {
+                DebugLogger.Instance.LogText(error.ErrorMessage);
+                outcomePanel.SetActive(true);
+                outcomePanel.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "Error in purchase: <color=red>" + error.ErrorMessage + "</color>";
+            });
     }
 
     public void ClearShop()

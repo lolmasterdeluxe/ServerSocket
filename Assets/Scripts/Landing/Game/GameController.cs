@@ -40,7 +40,6 @@ public class GameController : MonoBehaviour
         }
 
         highScoreText.text = PlayerStats.highscore.ToString();
-        finalScoreText.text = PlayerStats.highscore.ToString();
         scoreText.text = "0";
     }
 
@@ -71,6 +70,7 @@ public class GameController : MonoBehaviour
 
         currentScore += value;
         scoreText.text = currentScore.ToString();
+        finalScoreText.text = currentScore.ToString();
 
         if (currentScore >= PlayerStats.highscore)
         {
