@@ -4,22 +4,20 @@ using UnityEngine;
 
 public class ScrollingBackground : MonoBehaviour
 {
+    [SerializeField]
     private SpriteRenderer skyBackground;
+    [SerializeField]
     private SpriteRenderer grassBackground;
-    float offset = 0.0f;
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        skyBackground = GetComponent<SpriteRenderer>();
-        grassBackground = gameObject.transform.GetChild(0).GetComponent<SpriteRenderer>();
-    }
+    [SerializeField]
+    private float skySpeed = 0.25f, groundSpeed = 0.25f;
+    private float skyOffset = 0f, groundOffset = 0f;
 
     // Update is called once per frame
     void Update()
     {
-        offset += 0.25f * Time.deltaTime;
-        skyBackground.material.mainTextureOffset = new Vector2(offset, 0.0f);
-        grassBackground.material.mainTextureOffset = new Vector2(offset, 0.0f);
+        skyOffset += skySpeed * Time.deltaTime;
+        groundOffset += groundSpeed * Time.deltaTime;
+        skyBackground.material.mainTextureOffset = new Vector2(skyOffset, 0.0f);
+        grassBackground.material.mainTextureOffset = new Vector2(groundOffset, 0.0f);
     }
 }

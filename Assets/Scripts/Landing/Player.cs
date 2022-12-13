@@ -22,9 +22,6 @@ public class Player : MonoBehaviourPunCallbacks
     private GameObject leaderPanel;
     private GameObject eButton;
 
-    private InventoryManager inventoryManager;
-    private PlayFabDataManager playFabDataManager;
-
     public bool isOffline = false;
 
     enum CONTACT_TYPE
@@ -55,8 +52,6 @@ public class Player : MonoBehaviourPunCallbacks
         currentText = GameObject.FindGameObjectWithTag("CurrentText").GetComponent<TextMeshProUGUI>();
         eButton = GameObject.Find("EButton");
 
-        inventoryManager = FindObjectOfType<InventoryManager>();
-        playFabDataManager = FindObjectOfType<PlayFabDataManager>();
         canMove = true;
         eButton.SetActive(false);
     }
@@ -78,19 +73,14 @@ public class Player : MonoBehaviourPunCallbacks
                     {
                         case CONTACT_TYPE.SHOP:
                             shopPanel.GetComponent<ShopController>().OpenPanel(ClosePanel);
-                            inventoryManager.GetCatalog();
-                            inventoryManager.GetVirtualCurrencies();
                             break;
 
                         case CONTACT_TYPE.FRIEND:
                             friendsPanel.GetComponent<FriendsController>().OpenPanel(ClosePanel);
-                                  break;
+                            break;
 
                         case CONTACT_TYPE.LEADERBOARD:
                             leaderPanel.GetComponent<LeaderboardController>().OpenPanel(ClosePanel);
-                            playFabDataManager.OnGetLeaderboard();
-                            playFabDataManager.OnGetLeaderboardAroundPlayer();
-                            playFabDataManager.OnGetFriendsLeaderboard();
                             break;
 
                         case CONTACT_TYPE.GUILD:

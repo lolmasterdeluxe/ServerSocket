@@ -40,6 +40,21 @@ public class InventoryManager : MonoBehaviour
         }, DebugLogger.Instance.OnPlayfabError);
     }
 
+    public void AddVirtualCurrencies(int amount)
+    {
+        var addCurrencyRequest = new AddUserVirtualCurrencyRequest
+        {
+            VirtualCurrency = "SG",
+            Amount = amount,
+        };
+        PlayFabClientAPI.AddUserVirtualCurrency(addCurrencyRequest,
+        r =>
+        {
+            DebugLogger.Instance.LogText("Coins added: " + r.BalanceChange);
+            DebugLogger.Instance.LogText("Coins left: " + r.Balance);
+        }, DebugLogger.Instance.OnPlayfabError);
+    }
+
     public void GetCatalog()
     {
         var catreq = new GetCatalogItemsRequest
@@ -82,6 +97,7 @@ public class InventoryManager : MonoBehaviour
                 SetIcon(i);
                 InventoryItemManager inventoryItemManager = inventoryItem.GetComponent<InventoryItemManager>();
                 inventoryItemManager.itemId = i.ItemId;
+                inventoryItemManager.itemInstanceId = i.ItemInstanceId;
                 inventoryItemManager.SetItemVisuals(i.DisplayName, i.ItemClass, itemIcon);
 
                 int tempCount = 0;
@@ -137,6 +153,19 @@ public class InventoryManager : MonoBehaviour
                 outcomePanel.SetActive(true);
                 outcomePanel.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "Error in purchase: <color=red>" + error.ErrorMessage + "</color>";
             });
+    }
+
+    public void ConsumeItemRequest(string itemInstanceId)
+    {
+        var consumereq = new ConsumeItemRequest
+        {
+            ConsumeCount = 1,
+            ItemInstanceId = itemInstanceId
+        };
+        PlayFabClientAPI.ConsumeItem(consumereq,
+            result => {
+                DebugLogger.Instance.LogText("Item " + itemInstanceId + " consumed!");
+            }, DebugLogger.Instance.OnPlayfabError);
     }
 
     public void ClearShop()

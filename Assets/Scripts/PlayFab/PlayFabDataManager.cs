@@ -16,18 +16,22 @@ public class PlayFabDataManager : MonoBehaviour
     [SerializeField]
     private Image globalButton, localButton, friendsButton;
     [SerializeField]
+    private bool enableMOTD = false;
+    [SerializeField]
     private float MOTDAnimSpeed = 1, MOTDAnimTimer = 10;
     private float MOTDAnimDelay = 10;
     private bool MOTDBroadcasted = false;
 
     private void Start()
     {
-        OnClientGetTitleData();
+        if (enableMOTD)
+            OnClientGetTitleData();
     }
 
     private void Update()
     {
-        AnimateMOTD();
+        if (enableMOTD)
+            AnimateMOTD();
     }
 
     public void OnGetLeaderboard()

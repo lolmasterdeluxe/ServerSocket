@@ -7,5 +7,6 @@ public class Item : ScriptableObject
 {
     public string itemName;
     public Sprite itemIcon;
-    public float pointMultiplier;
+    public int pointMultiplier;
+    public string itemInstanceId;
 }

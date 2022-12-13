@@ -11,6 +11,7 @@ public class InventoryItemManager : MonoBehaviour
     private InventoryManager inventoryManager;
 
     public string itemId;
+    public string itemInstanceId;
     public int itemAmt;
 
     [SerializeField]
@@ -68,6 +69,7 @@ public class InventoryItemManager : MonoBehaviour
             if (itemName.text == shopItem.itemName)
             {
                 item = shopItem;
+                item.itemInstanceId = itemInstanceId;
             }
         }
 

@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 45b1d04a150233a4bb74d8653964b035, type: 3}
-  m_Name: Lock
+  m_Name: Shield
   m_EditorClassIdentifier: 
-  itemName: Lock
-  itemIcon: {fileID: 21300000, guid: 1eaee135ce037439d925cee5e41ce026, type: 3}
-  pointMultiplier: 8
+  itemName: Shield
+  itemIcon: {fileID: 21300000, guid: c67f6060700f79d4f842b3632c073ff9, type: 3}
+  pointMultiplier: 5
   itemInstanceId: 

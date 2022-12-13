@@ -19,7 +19,7 @@ public class GameController : MonoBehaviour
     public int difficultyMax = 5;
 
     [HideInInspector]
-    public bool isGameOver = false;
+    public bool isGameOver = false, addMoney = false;
     public float scrollSpeed = -2.5f;
 
     public int columnScore = 10;
@@ -27,6 +27,9 @@ public class GameController : MonoBehaviour
 
     [SerializeField]
     private PlayFabDataManager playFabDataManager;
+
+    [SerializeField]
+    private InventoryManager inventoryManager;
 
     private void Awake()
     {
@@ -41,6 +44,21 @@ public class GameController : MonoBehaviour
 
         highScoreText.text = PlayerStats.highscore.ToString();
         scoreText.text = "0";
+
+        playFabDataManager = FindObjectOfType<PlayFabDataManager>();
+        inventoryManager = FindObjectOfType<InventoryManager>();
+    }
+
+    private void Update()
+    {
+        if (isGameOver)
+        {
+            foreach (Item i in PlayerStats.equippedItems)
+            {
+                inventoryManager.ConsumeItemRequest(i.itemInstanceId);
+                PlayerStats.equippedItems.Remove(i);
+            }
+        }
     }
 
     public void ResetGame()
@@ -59,6 +77,11 @@ public class GameController : MonoBehaviour
         gameOverObject.SetActive(true);
         scoreText.gameObject.SetActive(false);
         highScoreText.gameObject.SetActive(false);
+        if (!addMoney)
+        {
+            inventoryManager.AddVirtualCurrencies(currentScore);
+            addMoney = true;
+        }
         isGameOver = true;
     }
 
@@ -68,7 +91,12 @@ public class GameController : MonoBehaviour
         if (isGameOver)
             return;
 
-        currentScore += value;
+        int multipliedValue = value;
+        foreach (Item i in PlayerStats.equippedItems)
+        {
+            multipliedValue *= i.pointMultiplier;
+        }
+        currentScore += multipliedValue;
         scoreText.text = currentScore.ToString();
         finalScoreText.text = currentScore.ToString();
 

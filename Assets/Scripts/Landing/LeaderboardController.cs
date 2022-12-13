@@ -6,27 +6,28 @@ public class LeaderboardController : MonoBehaviour
 {
     public GameObject panel;
     System.Action playerCallback;
+    public PlayFabDataManager playFabDataManager;
 
     // Start is called before the first frame update
     void Start()
     {
         panel.SetActive(false);
+        playFabDataManager = FindObjectOfType<PlayFabDataManager>();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
     public void OpenPanel(System.Action callBack = null)
     {
         panel.SetActive(true);
+        playFabDataManager.OnGetLeaderboard();
+        playFabDataManager.OnGetLeaderboardAroundPlayer();
+        playFabDataManager.OnGetFriendsLeaderboard();
         playerCallback = callBack;
     }
 
     public void ClosePanel()
     {
         panel.SetActive(false);
+        playFabDataManager.ClearLeaderboards();
         playerCallback();
     }
 }
