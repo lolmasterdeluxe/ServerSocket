@@ -8,15 +8,15 @@ using TMPro;
 public class PlayFabDataManager : MonoBehaviour
 {
     [SerializeField]
-    private TMP_InputField xpInputField, levelInputField, displayNameInputField;
+    private TMP_InputField displayNameInputField;
     [SerializeField]
-    private TextMeshProUGUI accountIDText, displayNameText, MOTDText;
+    private TextMeshProUGUI accountIDText, displayNameText, levelText, MOTDText;
     [SerializeField]
     private GameObject globalLeaderboard, localLeaderboard, friendsLeaderboard, playerRankPrefab;
     [SerializeField]
-    private Image globalButton, localButton, friendsButton;
+    private Image globalButton, localButton, friendsButton, expBar;
     [SerializeField]
-    private bool enableMOTD = false;
+    private bool isLanding = false;
     [SerializeField]
     private float MOTDAnimSpeed = 1, MOTDAnimTimer = 10;
     private float MOTDAnimDelay = 10;
@@ -24,13 +24,16 @@ public class PlayFabDataManager : MonoBehaviour
 
     private void Start()
     {
-        if (enableMOTD)
+        if (isLanding)
+        {
             OnClientGetTitleData();
+            OnGetUserData();
+        }
     }
 
     private void Update()
     {
-        if (enableMOTD)
+        if (isLanding)
             AnimateMOTD();
     }
 
@@ -180,18 +183,22 @@ public class PlayFabDataManager : MonoBehaviour
         );
     }
 
-    public void OnSetUserData()
+    public void OnAddExperience(int experience)
     {
+        PlayerStats.experience += experience;
+        while ((PlayerStats.experience / 10) >= PlayerStats.level)
+        {
+            PlayerStats.level++;
+        }
         PlayFabClientAPI.UpdateUserData(new UpdateUserDataRequest()
         {
             Data = new Dictionary<string, string>() {
-                {"XP", xpInputField.text},
-                {"Level", levelInputField.text}
+                {"XP", PlayerStats.experience.ToString()},
+                {"Level", PlayerStats.level.ToString()}
             }
         },
         result => { 
             DebugLogger.Instance.LogText("Successfully updated user data");
-            OnGetUserData();
         },
         error => {
             DebugLogger.Instance.LogText("Error setting user data");
@@ -207,10 +214,27 @@ public class PlayFabDataManager : MonoBehaviour
             Keys = null
         }, result => {
             DebugLogger.Instance.LogText("Got user data:");
-            if (result.Data == null || !result.Data.ContainsKey("XP")) DebugLogger.Instance.LogText("No XP");
-            else DebugLogger.Instance.LogText("XP: " + result.Data["XP"].Value);
-            if (result.Data == null || !result.Data.ContainsKey("Level")) DebugLogger.Instance.LogText("No Level");
-            else DebugLogger.Instance.LogText("Level: " + result.Data["Level"].Value);
+
+            if (result.Data == null || !result.Data.ContainsKey("XP"))
+                DebugLogger.Instance.LogText("No XP");
+            else
+            {
+                PlayerStats.experience = int.Parse(result.Data["XP"].Value);
+                DebugLogger.Instance.LogText("XP: " + result.Data["XP"].Value);
+            }
+
+            if (result.Data == null || !result.Data.ContainsKey("Level"))
+                DebugLogger.Instance.LogText("No Level");
+            else
+            {
+                PlayerStats.level = int.Parse(result.Data["Level"].Value);
+                levelText.text = "Level " + result.Data["Level"].Value;
+                DebugLogger.Instance.LogText("Level: " + result.Data["Level"].Value);
+            }
+
+            float exp = PlayerStats.experience;
+            float lvl = PlayerStats.level;
+            expBar.fillAmount = exp / (lvl * 10);
         }, (error) => {
             DebugLogger.Instance.LogText("Got error retrieving user data:");
             DebugLogger.Instance.LogText(error.GenerateErrorReport());
@@ -267,5 +291,7 @@ public static class PlayerStats
     public static string ID = "";
     public static string displayName = "";
     public static int highscore = 0;
+    public static int experience = 0;
+    public static int level= 0;
     public static List<Item> equippedItems = new List<Item>();
 }

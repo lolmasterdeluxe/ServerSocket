@@ -19,17 +19,15 @@ public class GameController : MonoBehaviour
     public int difficultyMax = 5;
 
     [HideInInspector]
-    public bool isGameOver = false, addMoney = false;
+    public bool isGameOver = false, distributeRewards = false;
     public float scrollSpeed = -2.5f;
 
     public int columnScore = 10;
     private int currentScore = 0;
 
-    [SerializeField]
-    private PlayFabDataManager playFabDataManager;
-
-    [SerializeField]
-    private InventoryManager inventoryManager;
+    public PlayFabDataManager playFabDataManager;
+    public InventoryManager inventoryManager;
+    public ScrollingBackground scrollingBackground;
 
     private void Awake()
     {
@@ -47,6 +45,7 @@ public class GameController : MonoBehaviour
 
         playFabDataManager = FindObjectOfType<PlayFabDataManager>();
         inventoryManager = FindObjectOfType<InventoryManager>();
+        scrollingBackground = GetComponent<ScrollingBackground>();
     }
 
     private void Update()
@@ -77,11 +76,15 @@ public class GameController : MonoBehaviour
         gameOverObject.SetActive(true);
         scoreText.gameObject.SetActive(false);
         highScoreText.gameObject.SetActive(false);
-        if (!addMoney)
+        scrollingBackground.backgroundScroll = false;
+
+        if (!distributeRewards)
         {
             inventoryManager.AddVirtualCurrencies(currentScore);
-            addMoney = true;
+            playFabDataManager.OnAddExperience(currentScore);
+            distributeRewards = true;
         }
+
         isGameOver = true;
     }
 
