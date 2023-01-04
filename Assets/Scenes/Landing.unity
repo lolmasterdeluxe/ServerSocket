@@ -592,7 +592,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 600
+  m_text: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a2878d3a2241b6141bdf5a0c364ece48, type: 2}
   m_sharedMaterial: {fileID: 3963515417004955349, guid: a2878d3a2241b6141bdf5a0c364ece48, type: 2}
@@ -3635,7 +3635,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 600
+  m_text: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a2878d3a2241b6141bdf5a0c364ece48, type: 2}
   m_sharedMaterial: {fileID: 3963515417004955349, guid: a2878d3a2241b6141bdf5a0c364ece48, type: 2}
@@ -15589,7 +15589,7 @@ MonoBehaviour:
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 0
-  m_FillAmount: 1
+  m_FillAmount: 0
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
@@ -15946,7 +15946,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 600
+  m_text: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a2878d3a2241b6141bdf5a0c364ece48, type: 2}
   m_sharedMaterial: {fileID: 3963515417004955349, guid: a2878d3a2241b6141bdf5a0c364ece48, type: 2}
@@ -20299,7 +20299,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Level 10
+  m_text: Level 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a2878d3a2241b6141bdf5a0c364ece48, type: 2}
   m_sharedMaterial: {fileID: 3963515417004955349, guid: a2878d3a2241b6141bdf5a0c364ece48, type: 2}
@@ -24712,7 +24712,7 @@ MonoBehaviour:
   localButton: {fileID: 176524110}
   friendsButton: {fileID: 1629888903}
   expBar: {fileID: 1022703832}
-  enableMOTD: 1
+  isLanding: 1
   MOTDAnimSpeed: 100
   MOTDAnimTimer: 10
 --- !u!1 &1468158212

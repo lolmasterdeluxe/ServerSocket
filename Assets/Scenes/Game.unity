@@ -820,6 +820,7 @@ MonoBehaviour:
   columnScore: 1
   playFabDataManager: {fileID: 1990619542}
   inventoryManager: {fileID: 1990619544}
+  scrollingBackground: {fileID: 0}
 --- !u!4 &857181929
 Transform:
   m_ObjectHideFlags: 0
@@ -868,6 +869,7 @@ MonoBehaviour:
   grassBackground: {fileID: 1652792244}
   skySpeed: 0.05
   groundSpeed: 0.084
+  backgroundScroll: 1
 --- !u!1 &916934769
 GameObject:
   m_ObjectHideFlags: 0
@@ -8315,11 +8317,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
-  m_ScreenMatchMode: 0
+  m_ReferenceResolution: {x: 1920, y: 1080}
+  m_ScreenMatchMode: 1
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
@@ -8822,7 +8824,7 @@ MonoBehaviour:
   localButton: {fileID: 0}
   friendsButton: {fileID: 0}
   expBar: {fileID: 0}
-  enableMOTD: 0
+  isLanding: 0
   MOTDAnimSpeed: 1
   MOTDAnimTimer: 10
 --- !u!4 &1990619543
