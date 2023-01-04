@@ -18,9 +18,9 @@ MonoBehaviour:
     AppIdChat: 8a587d92-e77a-40a4-8495-a86f1a799db2
     AppIdVoice: 
     AppVersion: 
-    UseNameServer: 1
+    UseNameServer: 0
     FixedRegion: 
-    Server: 
+    Server: 172.27.185.232
     Port: 0
     ProxyServer: 
     Protocol: 0
@@ -37,5 +37,5 @@ MonoBehaviour:
   - ClickRpc
   - DestroyRpc
   DisableAutoOpenWizard: 1
-  ShowSettings: 0
+  ShowSettings: 1
   DevRegionSetOnce: 0
