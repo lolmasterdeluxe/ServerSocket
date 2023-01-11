@@ -6,7 +6,7 @@ public class LeaderboardController : MonoBehaviour
 {
     public GameObject panel;
     System.Action playerCallback;
-    public PlayFabDataManager playFabDataManager;
+    PlayFabDataManager playFabDataManager;
 
     // Start is called before the first frame update
     void Start()

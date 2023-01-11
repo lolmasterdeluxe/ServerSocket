@@ -8,8 +8,8 @@ public class ShopController : MonoBehaviour
     public GameObject shopPanel;
     public GameObject inventoryPanel;
     System.Action playerCallback;
-    public EquippedItemManager equippedItemManager;
-    public InventoryManager inventoryManager;
+    EquippedItemManager equippedItemManager;
+    InventoryManager inventoryManager;
 
     // Start is called before the first frame update
     void Start()
