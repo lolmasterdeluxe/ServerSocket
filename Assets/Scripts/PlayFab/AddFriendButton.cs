@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using PlayFab;
+using PlayFab.ClientModels;
 using TMPro;
 
 public class AddFriendButton : MonoBehaviour
@@ -17,5 +19,10 @@ public class AddFriendButton : MonoBehaviour
     public void OnAddFriend() // To add friend based on display name
     {
         friendManager.SendFriendRequest(FriendIdType.DisplayName, displayName.text);
+    }
+
+    public void OnUnfriend() // To add friend based on display name
+    {
+        friendManager.OnUnfriendConfirmation(displayName.text);
     }
 }

@@ -4,17 +4,22 @@ using UnityEngine;
 using PlayFab;
 using PlayFab.ClientModels;
 using TMPro;
-using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class FriendManager : MonoBehaviour
 {
     [SerializeField]
-    private TMP_InputField searchFriendInputField, unfriendText;
+    private TMP_InputField searchFriendInputField;
     private List<FriendInfo> _friends = null;
     [SerializeField]
     private Transform friendListContainer, friendRequestContainer, addFriendContainer;
     [SerializeField]
-    private GameObject friendListBar, friendRequestBar, addFriendBar, notificationPanel;
+    private GameObject friendListBar, friendRequestBar, addFriendBar, notificationPanel, unfriendConfirmationPanel;
+    [SerializeField]
+    private Image friendListButton, friendRequestButton, searchFriendButton;
+    [SerializeField]
+    private TextMeshProUGUI emptyText;
+    private string unfriendDisplayName;
 
     public void DisplayFriends(List<FriendInfo> friendsCache)
     {
@@ -28,16 +33,16 @@ public class FriendManager : MonoBehaviour
             TextMeshProUGUI lastOnline = friendGO.transform.GetChild(3).GetComponent<TextMeshProUGUI>();
 
             username.text = f.TitleDisplayName;
-            level.text = OnGetPlayerLevel(f.FriendPlayFabId);
-            
-            System.DateTime currentDate = System.DateTime.Now;
-            if (currentDate.Date == f.Profile.LastLogin.Value.Date)
+            OnGetPlayerLevel(f.FriendPlayFabId, level);
+
+           /* System.DateTime currentDate = System.DateTime.Now;
+            if (currentDate.Date == f.Profile.LastLogin)
                 lastOnline.text = "Last Online: Today";
             else
             {
                 double numOfDays = (currentDate - f.Profile.LastLogin.Value).TotalDays;
-                lastOnline.text = "Last Online: " + numOfDays.ToString() + " days ago";
-            }
+                lastOnline.text = "Last Online: " + Mathf.RoundToInt(((float)numOfDays)) + " days ago";
+            }*/
         });
     }
 
@@ -51,10 +56,20 @@ public class FriendManager : MonoBehaviour
         }, result =>
         {
             // Refresh list
-            foreach (GameObject GO in friendListContainer)
-                Destroy(GO);
+            for (int i = 0; i < friendListContainer.childCount; ++i)
+                Destroy(friendListContainer.GetChild(i).gameObject);
             _friends = result.Friends;
-            DisplayFriends(_friends); // Triggers your UI
+            if (_friends.Count == 0)
+            {
+                emptyText.gameObject.SetActive(true);
+                emptyText.text = "No existing friends";
+            }
+            else
+            {
+                emptyText.gameObject.SetActive(false);
+                DisplayFriends(_friends); // Triggers your UI
+            }
+            
         }, DebugLogger.Instance.OnPlayfabError);
     }
 
@@ -83,18 +98,21 @@ public class FriendManager : MonoBehaviour
             result =>
             {
                 DebugLogger.Instance.LogText("Friend added successfully!");
-                Notify("Friend request sent!");
+                Notify("You have added " + friendId + " as friend!");
             },
             error =>
             {
                 DebugLogger.Instance.OnPlayfabError(error);
-                Notify("Friend request failed, please try again.");
+                if (error.HttpCode == 1183)
+                    Notify("User already added as friend!");
+                else
+                    Notify("Friend request failed, please try again.");
             });
     }
 
     // unlike AddFriend, RemoveFriend only takes a PlayFab ID
     // you can get this from the FriendInfo object under FriendPlayFabId
-    void RemoveFriend(FriendInfo friendInfo) // To investigate
+    public void RemoveFriend(FriendInfo friendInfo) // To investigate
     {
         PlayFabClientAPI.RemoveFriend(new RemoveFriendRequest
         {
@@ -102,12 +120,12 @@ public class FriendManager : MonoBehaviour
         }, result =>
         {
             _friends.Remove(friendInfo);
-        }, DebugLogger.Instance.OnPlayfabError);
-    }
-
-    public void OnUnfriend()
-    {
-        RemoveFriend(unfriendText.text);
+            Notify(friendInfo.TitleDisplayName + " unfriended successfully!");
+        }, error => 
+        { 
+            DebugLogger.Instance.OnPlayfabError(error);
+            Notify("Unfriend unsuccessful, please try again.");
+        });
     }
 
     private void RemoveFriend(string pfid)
@@ -131,21 +149,24 @@ public class FriendManager : MonoBehaviour
         PlayFabClientAPI.GetAccountInfo(req
         , result =>
         {
-            GameObject searchFriendGO = Instantiate(friendRequestBar, friendListContainer);
+            for (int i = 0; i < addFriendContainer.childCount; ++i)
+                Destroy(addFriendContainer.GetChild(i).gameObject);
+
+            GameObject searchFriendGO = Instantiate(addFriendBar, addFriendContainer);
             TextMeshProUGUI username = searchFriendGO.transform.GetChild(1).GetComponent<TextMeshProUGUI>();
             TextMeshProUGUI level = searchFriendGO.transform.GetChild(2).GetComponent<TextMeshProUGUI>();
             TextMeshProUGUI lastOnline = searchFriendGO.transform.GetChild(3).GetComponent<TextMeshProUGUI>();
 
             username.text = result.AccountInfo.TitleInfo.DisplayName;
-            level.text = OnGetPlayerLevel(result.AccountInfo.PlayFabId);
+            OnGetPlayerLevel(result.AccountInfo.PlayFabId, level);
 
             System.DateTime currentDate = System.DateTime.Now;
-            if (currentDate.Date == result.AccountInfo.TitleInfo.LastLogin.Value.Date)
+            if (currentDate.Date == result.AccountInfo.TitleInfo.Created.Date)
                 lastOnline.text = "Last Online: Today";
             else
             {
-                double numOfDays = (currentDate - result.AccountInfo.TitleInfo.LastLogin.Value.Date).TotalDays;
-                lastOnline.text = "Last Online: " + numOfDays.ToString() + " days ago";
+                double numOfDays = (currentDate - result.AccountInfo.TitleInfo.Created.Date).TotalDays;
+                lastOnline.text = "Last Online: " + Mathf.RoundToInt(((float)numOfDays)) + " days ago";
             }
         }, error => 
         {
@@ -169,7 +190,7 @@ public class FriendManager : MonoBehaviour
             TextMeshProUGUI lastOnline = searchFriendGO.transform.GetChild(3).GetComponent<TextMeshProUGUI>();
 
             username.text = result.AccountInfo.TitleInfo.DisplayName;
-            level.text = OnGetPlayerLevel(result.AccountInfo.PlayFabId);
+            OnGetPlayerLevel(result.AccountInfo.PlayFabId, level);
 
             System.DateTime currentDate = System.DateTime.Now;
             if (currentDate.Date == result.AccountInfo.TitleInfo.LastLogin.Value.Date)
@@ -177,7 +198,7 @@ public class FriendManager : MonoBehaviour
             else
             {
                 double numOfDays = (currentDate - result.AccountInfo.TitleInfo.LastLogin.Value.Date).TotalDays;
-                lastOnline.text = "Last Online: " + numOfDays.ToString() + " days ago";
+                lastOnline.text = "Last Online: " + Mathf.RoundToInt(((float)numOfDays)) + " days ago";
             }
         }, error =>
         {
@@ -186,30 +207,28 @@ public class FriendManager : MonoBehaviour
         });
     }
 
-    public string OnGetPlayerLevel(string playFabID)
+    public void OnGetPlayerLevel(string playFabID, TextMeshProUGUI levelText)
     {
-        string level = "0";
         PlayFabClientAPI.GetUserData(new GetUserDataRequest()
         {
-            PlayFabId = PlayerStats.ID,
+            PlayFabId = playFabID,
             Keys = null
         }, result => {
-            DebugLogger.Instance.LogText("Got player level:");
+            DebugLogger.Instance.LogText("Got player level from " + playFabID);
 
             if (result.Data == null || !result.Data.ContainsKey("Level"))
                 DebugLogger.Instance.LogText("No Level");
             else
             {
-                level = result.Data["Level"].Value;
                 DebugLogger.Instance.LogText("Level: " + result.Data["Level"].Value);
+                levelText.text = "Lvl " + result.Data["Level"].Value;
             }
 
-        }, (error) => {
+        }, error => {
             DebugLogger.Instance.LogText("Got error retrieving user data:");
             DebugLogger.Instance.LogText(error.GenerateErrorReport());
         });
-
-        return level;
+        
     }
 
     private void Notify(string notificationText)
@@ -217,6 +236,45 @@ public class FriendManager : MonoBehaviour
         notificationPanel.SetActive(true);
         TextMeshProUGUI notiftext = notificationPanel.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
         notiftext.text = notificationText;
+    }
+
+    public void OnUnfriendConfirmation(string displayName)
+    {
+        unfriendConfirmationPanel.SetActive(true);
+        TextMeshProUGUI confirmationText = unfriendConfirmationPanel.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
+        confirmationText.text = "Unfriend " + displayName + "?";
+        unfriendDisplayName = displayName;
+    }
+
+    public void OnUnfriend()
+    {
+        foreach (FriendInfo f in _friends)
+        {
+            if (f.TitleDisplayName == unfriendDisplayName)
+                RemoveFriend(f);
+        }
+    }
+
+    public void FriendlistButtonSelect(string friendListType)
+    {
+        if (friendListType == "Friendlist")
+        {
+            friendListButton.color = new Color32(255, 255, 255, 255);
+            friendRequestButton.color = new Color32(200, 200, 200, 128);
+            searchFriendButton.color = new Color32(200, 200, 200, 128);
+        }
+        else if (friendListType == "Friend Request")
+        {
+            friendListButton.color = new Color32(200, 200, 200, 128);
+            friendRequestButton.color = new Color32(255, 255, 255, 255);
+            searchFriendButton.color = new Color32(200, 200, 200, 128);
+        }
+        else if (friendListType == "Search Friend")
+        {
+            friendListButton.color = new Color32(200, 200, 200, 128);
+            friendRequestButton.color = new Color32(200, 200, 200, 128);
+            searchFriendButton.color = new Color32(255, 255, 255, 255);
+        }
     }
 }
 public enum FriendIdType 
