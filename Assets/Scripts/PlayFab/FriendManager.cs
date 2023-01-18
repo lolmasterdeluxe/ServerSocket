@@ -120,6 +120,7 @@ public class FriendManager : MonoBehaviour
         }, result =>
         {
             _friends.Remove(friendInfo);
+            GetFriends();
             Notify(friendInfo.TitleDisplayName + " unfriended successfully!");
         }, error => 
         { 
@@ -229,6 +230,20 @@ public class FriendManager : MonoBehaviour
             DebugLogger.Instance.LogText(error.GenerateErrorReport());
         });
         
+    }
+
+    public void OnReturnFriendRequest(string displayName)
+    {
+        PlayFabClientAPI.GetAccountInfo(new GetAccountInfoRequest()
+        {
+            TitleDisplayName = displayName
+        }, result =>
+        {
+            //SendFriendRequest(result.AccountInfo.PlayFabId, FriendIdType.PlayFabId, PlayerStats.ID);
+        }, error =>
+        {
+            DebugLogger.Instance.OnPlayfabError(error);
+        });
     }
 
     private void Notify(string notificationText)

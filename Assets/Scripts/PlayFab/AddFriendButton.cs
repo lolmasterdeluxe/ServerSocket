@@ -19,6 +19,7 @@ public class AddFriendButton : MonoBehaviour
     public void OnAddFriend() // To add friend based on display name
     {
         friendManager.SendFriendRequest(FriendIdType.DisplayName, displayName.text);
+        // friendManager.OnReturnFriendRequest(displayName.text);
     }
 
     public void OnUnfriend() // To add friend based on display name
