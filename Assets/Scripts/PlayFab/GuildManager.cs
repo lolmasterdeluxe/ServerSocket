@@ -3,6 +3,7 @@ using PlayFab.GroupsModels;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 
 /// <summary>
@@ -10,13 +11,31 @@ using UnityEngine;
 /// + Entities can be in multiple groups
 ///   - This is game specific, many games would only allow 1 group, meaning you'd have to perform some additional checks to validate this.
 /// </summary>
-public class GuildManager
+public class GuildManager : MonoBehaviour
 {
     // A local cache of some bits of PlayFab data
     // This cache pretty much only serves this example , and assumes that entities are uniquely identifiable by EntityId alone, which isn't technically true. Your data cache will have to be better.
+    public TMP_InputField guildName;
+    public TMP_InputField guildDescription;
+    public GameObject guildBarPrefab;
+    public Transform guildBarContainer;
     public readonly HashSet<KeyValuePair<string, string>> EntityGroupPairs = new HashSet<KeyValuePair<string, string>>();
     public readonly Dictionary<string, string> GroupNameById = new Dictionary<string, string>();
+    public readonly Dictionary<string, string> GroupDescById = new Dictionary<string, string>();
 
+    #region Entity Fundamentals
+    public static EntityKey AutoEntityKeyMaker()
+    {
+        string groupId = "Grp";
+        int randomIdNo = UnityEngine.Random.Range(0, 9999);
+        if (randomIdNo < 10)
+            groupId += "000" + randomIdNo.ToString();
+        else if (randomIdNo < 100)
+            groupId += "00" + randomIdNo.ToString();
+        else if (randomIdNo < 1000)
+            groupId += "0" + randomIdNo.ToString();
+        return new EntityKey { Id = groupId };
+    }
     public static EntityKey EntityKeyMaker(string entityId)
     {
         return new EntityKey { Id = entityId };
@@ -27,6 +46,9 @@ public class GuildManager
         Debug.LogError(error.GenerateErrorReport());
     }
 
+    #endregion
+
+    #region List Groups
     public void ListGroups(EntityKey entityKey)
     {
         var request = new ListMembershipRequest { Entity = entityKey };
@@ -35,13 +57,28 @@ public class GuildManager
     private void OnListGroups(ListMembershipResponse response)
     {
         var prevRequest = (ListMembershipRequest)response.Request;
+
+        // Refresh list
+        for (int i = 0; i < guildBarContainer.childCount; ++i)
+        {
+            Destroy(guildBarContainer.GetChild(i).gameObject);
+        }
+
         foreach (var pair in response.Groups)
         {
+            GameObject guildBar = Instantiate(guildBarPrefab, guildBarContainer);
+            guildBar.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = pair.GroupName;
             GroupNameById[pair.Group.Id] = pair.GroupName;
             EntityGroupPairs.Add(new KeyValuePair<string, string>(prevRequest.Entity.Id, pair.Group.Id));
         }
     }
+    #endregion
 
+    #region Group Creation and deletion
+    public void CreateGroupWithParams()
+    {
+        CreateGroup(guildName.text, AutoEntityKeyMaker());
+    }
     public void CreateGroup(string groupName, EntityKey entityKey)
     {
         // A player-controlled entity creates a new group
@@ -74,6 +111,9 @@ public class GuildManager
         EntityGroupPairs.IntersectWith(temp);
         GroupNameById.Remove(prevRequest.Group.Id);
     }
+    #endregion
+
+    #region Group Invitations and Applications
 
     public void InviteToGroup(string groupId, EntityKey entityKey)
     {
@@ -115,6 +155,10 @@ public class GuildManager
         var prevRequest = (AcceptGroupApplicationRequest)response.Request;
         Debug.Log("Entity Added to Group: " + prevRequest.Entity.Id + " to " + prevRequest.Group.Id);
     }
+
+    #endregion
+
+    #region Group Administrative Functions
     public void KickMember(string groupId, EntityKey entityKey)
     {
         var request = new RemoveMembersRequest { Group = EntityKeyMaker(groupId), Members = new List<EntityKey> { entityKey } };
@@ -127,4 +171,5 @@ public class GuildManager
         Debug.Log("Entity kicked from Group: " + prevRequest.Members[0].Id + " to " + prevRequest.Group.Id);
         EntityGroupPairs.Remove(new KeyValuePair<string, string>(prevRequest.Members[0].Id, prevRequest.Group.Id));
     }
+    #endregion
 }
