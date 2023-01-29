@@ -201,7 +201,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Last Online: '
+  m_text: 'Role: Leader'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 528ef0ed90734b446b233838d63bf9e8, type: 2}
   m_sharedMaterial: {fileID: 8846772124580343615, guid: 528ef0ed90734b446b233838d63bf9e8, type: 2}
@@ -281,7 +281,6 @@ GameObject:
   - component: {fileID: 3117865772792152543}
   - component: {fileID: 2932222728202318813}
   - component: {fileID: 1277434831377337393}
-  - component: {fileID: 1773515081711819473}
   m_Layer: 5
   m_Name: Guild Member Bar
   m_TagString: Untagged
@@ -353,19 +352,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 5
---- !u!114 &1773515081711819473
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3382606710461345635}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fb33dbc84c8b8bf408c1f67097f84453, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  displayName: {fileID: 4768952781688394451}
 --- !u!1 &4555248511999718662
 GameObject:
   m_ObjectHideFlags: 0
