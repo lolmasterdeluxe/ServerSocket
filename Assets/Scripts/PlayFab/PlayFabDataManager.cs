@@ -45,7 +45,7 @@ public class PlayFabDataManager : MonoBehaviour
             StartPosition = 0,
             MaxResultsCount = 100,
         };
-        PlayFabClientAPI.GetLeaderboard(lbreq, OnGetLeaderboardSuccess, DebugLogger.Instance.OnPlayfabError);
+        PlayFabClientAPI.GetLeaderboard(lbreq, OnGetLeaderboardSuccess, DebugLogger.Instance.OnPlayFabError);
     }
 
     public void OnGetLeaderboardAroundPlayer()
@@ -55,7 +55,7 @@ public class PlayFabDataManager : MonoBehaviour
             StatisticName = "Highscore", // playfab leaderboard statistic name
             MaxResultsCount = 10,
         };
-        PlayFabClientAPI.GetLeaderboardAroundPlayer(lbreq, OnGetLeaderboardAroundPlayerSuccess, DebugLogger.Instance.OnPlayfabError);
+        PlayFabClientAPI.GetLeaderboardAroundPlayer(lbreq, OnGetLeaderboardAroundPlayerSuccess, DebugLogger.Instance.OnPlayFabError);
     }
 
     public void OnGetFriendsLeaderboard()
@@ -65,7 +65,7 @@ public class PlayFabDataManager : MonoBehaviour
             StatisticName = "Highscore", // playfab leaderboard statistic name
             MaxResultsCount = 100,
         };
-        PlayFabClientAPI.GetFriendLeaderboard(lbreq, OnGetFriendLeaderboardSuccess, DebugLogger.Instance.OnPlayfabError);
+        PlayFabClientAPI.GetFriendLeaderboard(lbreq, OnGetFriendLeaderboardSuccess, DebugLogger.Instance.OnPlayFabError);
     }
 
 
@@ -116,7 +116,7 @@ public class PlayFabDataManager : MonoBehaviour
             }
         };
         DebugLogger.Instance.LogText("Submitting score: " + PlayerStats.highscore);
-        PlayFabClientAPI.UpdatePlayerStatistics(req, OnScoreUpdateSuccess, DebugLogger.Instance.OnPlayfabError);
+        PlayFabClientAPI.UpdatePlayerStatistics(req, OnScoreUpdateSuccess, DebugLogger.Instance.OnPlayFabError);
     }
 
     private void OnScoreUpdateSuccess(UpdatePlayerStatisticsResult r)
@@ -254,7 +254,7 @@ public class PlayFabDataManager : MonoBehaviour
         {
             DisplayName = displayNameInputField.text,
         };
-        PlayFabClientAPI.UpdateUserTitleDisplayName(updateDisplayNameRequest, OnDisplayNameUpdate, DebugLogger.Instance.OnPlayfabError);
+        PlayFabClientAPI.UpdateUserTitleDisplayName(updateDisplayNameRequest, OnDisplayNameUpdate, DebugLogger.Instance.OnPlayFabError);
     }
 
     private void OnDisplayNameUpdate(UpdateUserTitleDisplayNameResult r)
@@ -294,4 +294,6 @@ public static class PlayerStats
     public static int experience = 0;
     public static int level= 0;
     public static List<Item> equippedItems = new List<Item>();
+    public static string entityId;
+    public static string entityType;
 }

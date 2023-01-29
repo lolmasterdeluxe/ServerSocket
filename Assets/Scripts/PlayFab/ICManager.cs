@@ -30,12 +30,12 @@ public class ICManager : MonoBehaviour
         };
         PlayFabClientAPI.UpdateUserData(req, 
             result => { Debug.Log("Data sent success!");
-            LoadJson();}, DebugLogger.Instance.OnPlayfabError);
+            LoadJson();}, DebugLogger.Instance.OnPlayFabError);
     }
 
     public void LoadJson()
     {
-        PlayFabClientAPI.GetUserData(new GetUserDataRequest(), OnJSONDataReceived, DebugLogger.Instance.OnPlayfabError);
+        PlayFabClientAPI.GetUserData(new GetUserDataRequest(), OnJSONDataReceived, DebugLogger.Instance.OnPlayFabError);
     }
 
     private void OnJSONDataReceived(GetUserDataResult r)

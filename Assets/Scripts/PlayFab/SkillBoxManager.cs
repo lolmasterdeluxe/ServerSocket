@@ -22,12 +22,12 @@ public class SkillBoxManager : MonoBehaviour
                 {"Skills",stringListAsJson }
             }
         };
-        PlayFabClientAPI.UpdateUserData(req, result => Debug.Log("Data sent success!"), DebugLogger.Instance.OnPlayfabError);
+        PlayFabClientAPI.UpdateUserData(req, result => Debug.Log("Data sent success!"), DebugLogger.Instance.OnPlayFabError);
     }
     
     public void LoadJson()
     {
-        PlayFabClientAPI.GetUserData(new GetUserDataRequest(), OnJSONDataReceived, DebugLogger.Instance.OnPlayfabError);
+        PlayFabClientAPI.GetUserData(new GetUserDataRequest(), OnJSONDataReceived, DebugLogger.Instance.OnPlayFabError);
     }
 
     private void OnJSONDataReceived(GetUserDataResult r)

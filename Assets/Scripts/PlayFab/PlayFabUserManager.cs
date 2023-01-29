@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
+using PlayFab.AuthenticationModels;
 
 public class PlayFabUserManager : MonoBehaviour
 {
@@ -13,6 +14,14 @@ public class PlayFabUserManager : MonoBehaviour
     private TMP_InputField reg_email, reg_username, reg_password, reg_confirm_password, login_email, login_password, recovery_email;
     [SerializeField]
     private TextMeshProUGUI loginErrorMessage, registerErrorMessage, recoveryErrorMessage;
+
+    private void Start()
+    {
+        login_email.text = "kiddrifdi@gmail.com";
+        login_password.text = "Revolver360";
+        login_email.ForceLabelUpdate();
+        login_password.ForceLabelUpdate();
+    }
 
     public void OnRegister()
     {
@@ -87,6 +96,13 @@ public class PlayFabUserManager : MonoBehaviour
             DebugLogger.Instance.LogText("PlayerStats.highscore: " + PlayerStats.highscore);
         }
 
+        PlayFabAuthenticationAPI.GetEntityToken(new GetEntityTokenRequest(),
+        (entityResult) =>
+        {
+            PlayerStats.entityId = entityResult.Entity.Id;
+            PlayerStats.entityType = entityResult.Entity.Type;
+        }, DebugLogger.Instance.OnPlayFabError); // Define your own OnPlayFabError function to report errors
+
         DebugLogger.Instance.LogText("Login Success!");
         SceneTransition("Landing");
     }
@@ -101,7 +117,7 @@ public class PlayFabUserManager : MonoBehaviour
     {
         string customID = "GuestID_" + Random.Range(100000, 1000000); ; 
         var request = new LoginWithCustomIDRequest { CustomId = customID, CreateAccount = true };
-        PlayFabClientAPI.LoginWithCustomID(request, OnGuestLoginSuccess, DebugLogger.Instance.OnPlayfabError);
+        PlayFabClientAPI.LoginWithCustomID(request, OnGuestLoginSuccess, DebugLogger.Instance.OnPlayFabError);
     }
 
     private void OnGuestLoginSuccess(LoginResult result)

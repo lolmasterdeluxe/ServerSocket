@@ -13,7 +13,7 @@ public class TradeManager : MonoBehaviour
         {
             AllowedPlayerIds = new List<string> { secondPlayerId }, // PlayFab ID
             OfferedInventoryInstanceIds = new List<string> { myItemInstanceId }
-        }, GiveSuccess, DebugLogger.Instance.OnPlayfabError);
+        }, GiveSuccess, DebugLogger.Instance.OnPlayFabError);
     }
 
     public void GiveSuccess(OpenTradeResponse r)
@@ -27,7 +27,7 @@ public class TradeManager : MonoBehaviour
         {
             OfferingPlayerId = firstPlayFabId,
             TradeId = tradeId
-        }, ExamineTradeSuccess, DebugLogger.Instance.OnPlayfabError);
+        }, ExamineTradeSuccess, DebugLogger.Instance.OnPlayFabError);
     }
 
     public void ExamineTradeSuccess(GetTradeStatusResponse r)
@@ -42,7 +42,7 @@ public class TradeManager : MonoBehaviour
         {
             OfferingPlayerId = firstPlayFabId,
             TradeId = tradeId
-        }, AcceptTradeSuccess, DebugLogger.Instance.OnPlayfabError);
+        }, AcceptTradeSuccess, DebugLogger.Instance.OnPlayFabError);
     }
 
     public void AcceptTradeSuccess(AcceptTradeResponse r)

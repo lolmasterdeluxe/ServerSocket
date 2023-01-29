@@ -22,7 +22,7 @@ public class DebugLogger : MonoBehaviour
         }
     }
 
-    public void OnPlayfabError(PlayFabError e)
+    public void OnPlayFabError(PlayFabError e)
     {
         LogText("Playfab Error" + e.GenerateErrorReport());
     }

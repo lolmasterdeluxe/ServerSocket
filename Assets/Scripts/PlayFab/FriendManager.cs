@@ -70,7 +70,7 @@ public class FriendManager : MonoBehaviour
                 DisplayFriends(_friends); // Triggers your UI
             }
             
-        }, DebugLogger.Instance.OnPlayfabError);
+        }, DebugLogger.Instance.OnPlayFabError);
     }
 
     public void SendFriendRequest(FriendIdType idType, string friendId)
@@ -102,7 +102,7 @@ public class FriendManager : MonoBehaviour
             },
             error =>
             {
-                DebugLogger.Instance.OnPlayfabError(error);
+                DebugLogger.Instance.OnPlayFabError(error);
                 if (error.HttpCode == 1183)
                     Notify("User already added as friend!");
                 else
@@ -124,7 +124,7 @@ public class FriendManager : MonoBehaviour
             Notify(friendInfo.TitleDisplayName + " unfriended successfully!");
         }, error => 
         { 
-            DebugLogger.Instance.OnPlayfabError(error);
+            DebugLogger.Instance.OnPlayFabError(error);
             Notify("Unfriend unsuccessful, please try again.");
         });
     }
@@ -138,7 +138,7 @@ public class FriendManager : MonoBehaviour
         PlayFabClientAPI.RemoveFriend(req
         , result => {
             Debug.Log("unfriend");
-        }, DebugLogger.Instance.OnPlayfabError);
+        }, DebugLogger.Instance.OnPlayFabError);
     }
 
     public void SearchFriend()
@@ -172,7 +172,7 @@ public class FriendManager : MonoBehaviour
         }, error => 
         {
             Notify("No account of that name exists");
-            DebugLogger.Instance.OnPlayfabError(error);
+            DebugLogger.Instance.OnPlayFabError(error);
         });
     }
 
@@ -204,7 +204,7 @@ public class FriendManager : MonoBehaviour
         }, error =>
         {
             Notify("No account of that name exists");
-            DebugLogger.Instance.OnPlayfabError(error);
+            DebugLogger.Instance.OnPlayFabError(error);
         });
     }
 
@@ -242,7 +242,7 @@ public class FriendManager : MonoBehaviour
             //SendFriendRequest(result.AccountInfo.PlayFabId, FriendIdType.PlayFabId, PlayerStats.ID);
         }, error =>
         {
-            DebugLogger.Instance.OnPlayfabError(error);
+            DebugLogger.Instance.OnPlayFabError(error);
         });
     }
 

@@ -27,7 +27,7 @@ public class InventoryManager : MonoBehaviour
             int coins = r.VirtualCurrency["SG"]; // Replace CN with your currency
             DebugLogger.Instance.LogText("Coins: " + coins);
             shopMoneyText.text = coins.ToString();
-        }, DebugLogger.Instance.OnPlayfabError);
+        }, DebugLogger.Instance.OnPlayFabError);
     }
     public void GetVirtualCurrencies(TextMeshProUGUI moneyText)
     {
@@ -37,7 +37,7 @@ public class InventoryManager : MonoBehaviour
             int coins = r.VirtualCurrency["SG"]; // Replace CN with your currency
             DebugLogger.Instance.LogText("Coins: " + coins);
             moneyText.text = coins.ToString();
-        }, DebugLogger.Instance.OnPlayfabError);
+        }, DebugLogger.Instance.OnPlayFabError);
     }
 
     public void AddVirtualCurrencies(int amount)
@@ -52,7 +52,7 @@ public class InventoryManager : MonoBehaviour
         {
             DebugLogger.Instance.LogText("Coins added: " + r.BalanceChange);
             DebugLogger.Instance.LogText("Coins left: " + r.Balance);
-        }, DebugLogger.Instance.OnPlayfabError);
+        }, DebugLogger.Instance.OnPlayFabError);
     }
 
     public void GetCatalog()
@@ -80,7 +80,7 @@ public class InventoryManager : MonoBehaviour
                 catalogItem.GetComponent<ShopItemManager>().SetItemPrice();
                 DebugLogger.Instance.LogText(i.DisplayName + ", " + i.VirtualCurrencyPrices["SG"]);
             }
-        }, DebugLogger.Instance.OnPlayfabError);
+        }, DebugLogger.Instance.OnPlayFabError);
     }
 
     public void GetPlayerInventory()
@@ -116,7 +116,7 @@ public class InventoryManager : MonoBehaviour
                 DebugLogger.Instance.LogText(i.DisplayName + "," + i.ItemId + "," + i.ItemInstanceId);
             }
 
-        }, DebugLogger.Instance.OnPlayfabError);
+        }, DebugLogger.Instance.OnPlayFabError);
     }
 
     public void ConfirmPurchase(string itemName, string catalogVersion, string itemId, string virtualCurrency, int price)
@@ -165,7 +165,7 @@ public class InventoryManager : MonoBehaviour
         PlayFabClientAPI.ConsumeItem(consumereq,
             result => {
                 DebugLogger.Instance.LogText("Item " + itemInstanceId + " consumed!");
-            }, DebugLogger.Instance.OnPlayfabError);
+            }, DebugLogger.Instance.OnPlayFabError);
     }
 
     public void ClearShop()
