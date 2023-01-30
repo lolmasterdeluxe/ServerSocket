@@ -8,15 +8,40 @@ using UnityEngine.UI;
 
 public class FriendManager : MonoBehaviour
 {
+    [Header("Friend Search Field")]
     [SerializeField]
     private TMP_InputField searchFriendInputField;
     private List<FriendInfo> _friends = null;
+
+    [Header("Friend Bar Prefabs")]
     [SerializeField]
-    private Transform friendListContainer, friendRequestContainer, addFriendContainer;
+    private Transform friendListContainer;
     [SerializeField]
-    private GameObject friendListBar, friendRequestBar, addFriendBar, notificationPanel, unfriendConfirmationPanel;
+    private Transform friendRequestContainer;
     [SerializeField]
-    private Image friendListButton, friendRequestButton, searchFriendButton;
+    private Transform addFriendContainer;
+    [SerializeField]
+    private GameObject friendListBar;
+    [SerializeField]
+    private GameObject friendRequestBar;
+    [SerializeField]
+    private GameObject addFriendBar;
+
+    [Header("Notifications")]
+    [SerializeField]
+    private GameObject notificationPanel;
+    [SerializeField]
+    private GameObject unfriendConfirmationPanel;
+
+    [Header("Buttons")]
+    [SerializeField]
+    private Image friendListButton;
+    [SerializeField]
+    private Image friendRequestButton;
+    [SerializeField]
+    private Image searchFriendButton;
+
+    [Header("Misc.")]
     [SerializeField]
     private TextMeshProUGUI emptyText;
     private string unfriendDisplayName;

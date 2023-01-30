@@ -7,18 +7,45 @@ using TMPro;
 
 public class PlayFabDataManager : MonoBehaviour
 {
+    [Header("IC Screen GUI & MOTD")]
     [SerializeField]
     private TMP_InputField displayNameInputField;
     [SerializeField]
-    private TextMeshProUGUI accountIDText, displayNameText, levelText, MOTDText;
+    private TextMeshProUGUI accountIDText;
     [SerializeField]
-    private GameObject globalLeaderboard, localLeaderboard, friendsLeaderboard, playerRankPrefab;
+    private TextMeshProUGUI displayNameText;
     [SerializeField]
-    private Image globalButton, localButton, friendsButton, expBar;
+    private TextMeshProUGUI levelText;
+    [SerializeField]
+    private TextMeshProUGUI MOTDText;
+
+    [Header("Leaderboard Prefabs")]
+    [SerializeField]
+    private GameObject globalLeaderboard;
+    [SerializeField]
+    private GameObject localLeaderboard;
+    [SerializeField]
+    private GameObject friendsLeaderboard;
+    [SerializeField]
+    private GameObject playerRankPrefab;
+
+    [Header("Leaderboard Screen GUI")]
+    [SerializeField]
+    private Image globalButton;
+    [SerializeField]
+    private Image localButton;
+    [SerializeField]
+    private Image friendsButton;
+    [SerializeField]
+    private Image expBar;
     [SerializeField]
     private bool isLanding = false;
+
+    [Header("MOTD Animation Variables")]
     [SerializeField]
-    private float MOTDAnimSpeed = 1, MOTDAnimTimer = 10;
+    private float MOTDAnimSpeed = 1;
+    [SerializeField]
+    private float MOTDAnimTimer = 10;
     private float MOTDAnimDelay = 10;
     private bool MOTDBroadcasted = false;
 
@@ -37,71 +64,80 @@ public class PlayFabDataManager : MonoBehaviour
             AnimateMOTD();
     }
 
+    #region Leaderboard
     public void OnGetLeaderboard()
     {
-        var lbreq = new GetLeaderboardRequest
+        PlayFabClientAPI.GetLeaderboard(new GetLeaderboardRequest
         {
             StatisticName = "Highscore", // playfab leaderboard statistic name
             StartPosition = 0,
             MaxResultsCount = 100,
-        };
-        PlayFabClientAPI.GetLeaderboard(lbreq, OnGetLeaderboardSuccess, DebugLogger.Instance.OnPlayFabError);
+        }, 
+        result =>
+        {
+            foreach (var item in result.Leaderboard)
+            {
+                GameObject playerRank = Instantiate(playerRankPrefab, globalLeaderboard.transform);
+                RankManager playerRankManager = playerRank.GetComponent<RankManager>();
+
+                playerRankManager.SetPlayerLeaderboardStats(item.Position + 1, item.DisplayName, item.StatValue);
+            }
+        }
+        , (error) =>
+        {
+            DebugLogger.Instance.LogText(error.GenerateErrorReport());
+        });
     }
 
     public void OnGetLeaderboardAroundPlayer()
     {
-        var lbreq = new GetLeaderboardAroundPlayerRequest
+        PlayFabClientAPI.GetLeaderboardAroundPlayer(new GetLeaderboardAroundPlayerRequest
         {
             StatisticName = "Highscore", // playfab leaderboard statistic name
             MaxResultsCount = 10,
-        };
-        PlayFabClientAPI.GetLeaderboardAroundPlayer(lbreq, OnGetLeaderboardAroundPlayerSuccess, DebugLogger.Instance.OnPlayFabError);
+        },
+        result =>
+        {
+            foreach (var item in result.Leaderboard)
+            {
+                GameObject playerRank = Instantiate(playerRankPrefab, localLeaderboard.transform);
+                RankManager playerRankManager = playerRank.GetComponent<RankManager>();
+
+                playerRankManager.SetPlayerLeaderboardStats(item.Position + 1, item.DisplayName, item.StatValue);
+            }
+        }
+        , (error) =>
+        {
+            DebugLogger.Instance.LogText(error.GenerateErrorReport());
+        });
     }
 
     public void OnGetFriendsLeaderboard()
     {
-        var lbreq = new GetFriendLeaderboardRequest
+        PlayFabClientAPI.GetFriendLeaderboard(new GetFriendLeaderboardRequest
         {
             StatisticName = "Highscore", // playfab leaderboard statistic name
             MaxResultsCount = 100,
-        };
-        PlayFabClientAPI.GetFriendLeaderboard(lbreq, OnGetFriendLeaderboardSuccess, DebugLogger.Instance.OnPlayFabError);
-    }
-
-
-    private void OnGetLeaderboardSuccess(GetLeaderboardResult r)
-    {
-        foreach (var item in r.Leaderboard)
+        },
+        result =>
         {
-            GameObject playerRank = Instantiate(playerRankPrefab, globalLeaderboard.transform);
-            RankManager playerRankManager = playerRank.GetComponent<RankManager>();
+            foreach (var item in result.Leaderboard)
+            {
+                GameObject playerRank = Instantiate(playerRankPrefab, friendsLeaderboard.transform);
+                RankManager playerRankManager = playerRank.GetComponent<RankManager>();
 
-            playerRankManager.SetPlayerLeaderboardStats(item.Position, item.DisplayName, item.StatValue);
+                playerRankManager.SetPlayerLeaderboardStats(item.Position + 1, item.DisplayName, item.StatValue);
+            }
         }
-    }
-
-    private void OnGetLeaderboardAroundPlayerSuccess(GetLeaderboardAroundPlayerResult r)
-    {
-        foreach (var item in r.Leaderboard)
+        , (error) =>
         {
-            GameObject playerRank = Instantiate(playerRankPrefab, localLeaderboard.transform);
-            RankManager playerRankManager = playerRank.GetComponent<RankManager>();
-
-            playerRankManager.SetPlayerLeaderboardStats(item.Position, item.DisplayName, item.StatValue);
-        }
+            DebugLogger.Instance.LogText(error.GenerateErrorReport());
+        });
     }
 
-    private void OnGetFriendLeaderboardSuccess(GetLeaderboardResult r)
-    {
-        foreach (var item in r.Leaderboard)
-        {
-            GameObject playerRank = Instantiate(playerRankPrefab, friendsLeaderboard.transform);
-            RankManager playerRankManager = playerRank.GetComponent<RankManager>();
+    #endregion
 
-            playerRankManager.SetPlayerLeaderboardStats(item.Position, item.DisplayName, item.StatValue);
-        }
-    }
-
+    #region Score
     public void OnScoreUpdate()
     {
         var req = new UpdatePlayerStatisticsRequest
@@ -124,6 +160,9 @@ public class PlayFabDataManager : MonoBehaviour
         DebugLogger.Instance.LogText("Successful leaderboard sent: " + r.ToString());
     }
 
+    #endregion
+
+    #region Leaderboard Misc.
     public void ClearLeaderboards()
     {
         for (int i = 0; i < globalLeaderboard.transform.childCount; ++i)
@@ -164,6 +203,9 @@ public class PlayFabDataManager : MonoBehaviour
         }
     }
 
+    #endregion
+
+    #region Title Data
     public void OnClientGetTitleData()
     {
         PlayFabClientAPI.GetTitleData(new GetTitleDataRequest(),
@@ -182,6 +224,9 @@ public class PlayFabDataManager : MonoBehaviour
             }
         );
     }
+    #endregion
+
+    #region Player Stats
 
     public void OnAddExperience(int experience)
     {
@@ -240,6 +285,9 @@ public class PlayFabDataManager : MonoBehaviour
             DebugLogger.Instance.LogText(error.GenerateErrorReport());
         });
     }
+    #endregion
+
+    #region Display Profile
 
     public void OnDisplayProfileDetails()
     {
@@ -263,7 +311,9 @@ public class PlayFabDataManager : MonoBehaviour
         PlayerStats.displayName = r.DisplayName;
         DebugLogger.Instance.LogText("Display name updated!" + r.DisplayName);
     }
+    #endregion
 
+    #region MOTD Animation
     private void AnimateMOTD()
     {
         if (MOTDBroadcasted)
@@ -283,6 +333,7 @@ public class PlayFabDataManager : MonoBehaviour
             MOTDRect.anchoredPosition = new Vector2(1920, MOTDRect.anchoredPosition.y);
         }
     }
+    #endregion
 }
 
 public static class PlayerStats

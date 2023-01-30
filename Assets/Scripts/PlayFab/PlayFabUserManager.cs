@@ -8,15 +8,37 @@ using PlayFab.AuthenticationModels;
 
 public class PlayFabUserManager : MonoBehaviour
 {
+    [Header("Panels")]
     [SerializeField]
-    private GameObject registerPanel, loginPanel;
+    private GameObject registerPanel;
     [SerializeField]
-    private TMP_InputField reg_email, reg_username, reg_password, reg_confirm_password, login_email, login_password, recovery_email;
+    private GameObject loginPanel;
+
+    [Header("Input Fields")]
     [SerializeField]
-    private TextMeshProUGUI loginErrorMessage, registerErrorMessage, recoveryErrorMessage;
+    private TMP_InputField reg_email;
+    [SerializeField]
+    private TMP_InputField reg_username;
+    [SerializeField]
+    private TMP_InputField reg_password;
+    [SerializeField]
+    private TMP_InputField reg_confirm_password;
+    [SerializeField]
+    private TMP_InputField login_email;
+    [SerializeField]
+    private TMP_InputField login_password;
+    [SerializeField]
+    private TMP_InputField recovery_email;
+
+    [Header("Error Message GUI")]
+    [SerializeField]
+    private TextMeshProUGUI loginErrorMessage;
+    private TextMeshProUGUI registerErrorMessage;
+    private TextMeshProUGUI recoveryErrorMessage;
 
     private void Start()
     {
+        // Temporary Instant Login
         login_email.text = "kiddrifdi@gmail.com";
         login_password.text = "Revolver360";
         login_email.ForceLabelUpdate();
@@ -25,16 +47,30 @@ public class PlayFabUserManager : MonoBehaviour
 
     public void OnRegister()
     {
-        var registerRequest = new RegisterPlayFabUserRequest
-        {
-            Email = reg_email.text,
-            Username = reg_username.text,
-            Password = reg_password.text,
-            DisplayName = reg_username.text
-        };
         if (reg_password.text == reg_confirm_password.text)
         {
-            PlayFabClientAPI.RegisterPlayFabUser(registerRequest, OnRegSuccess, OnRegisterError);
+            PlayFabClientAPI.RegisterPlayFabUser(new RegisterPlayFabUserRequest
+            {
+                Email = reg_email.text,
+                Username = reg_username.text,
+                Password = reg_password.text,
+                DisplayName = reg_username.text
+            },
+            result =>
+            {
+                reg_email.text = "";
+                reg_username.text = "";
+                reg_password.text = "";
+                registerPanel.SetActive(false);
+                loginPanel.SetActive(true);
+                registerErrorMessage.text = "Registration success!";
+                DebugLogger.Instance.LogText("Registration success!");
+            }
+            , (error) =>
+            {
+                registerErrorMessage.text = error.ErrorMessage;
+                DebugLogger.Instance.LogText(error.GenerateErrorReport());
+            });
         }
         else
         {
@@ -43,27 +79,9 @@ public class PlayFabUserManager : MonoBehaviour
         }
     }
 
-    private void OnRegisterError(PlayFabError e)
-    {
-        registerErrorMessage.text = e.ErrorMessage;
-        DebugLogger.Instance.LogText(e.GenerateErrorReport());
-    }
-
-    private void OnRegSuccess(RegisterPlayFabUserResult r)
-    {
-        //Debug.Log("Register success");
-        reg_email.text = "";
-        reg_username.text = "";
-        reg_password.text = "";
-        registerPanel.SetActive(false);
-        loginPanel.SetActive(true);
-        registerErrorMessage.text = "Registration success!";
-        DebugLogger.Instance.LogText("Registration success!");
-    }
-
     public void OnLogin()
     {
-        var loginRequest = new LoginWithEmailAddressRequest
+        PlayFabClientAPI.LoginWithEmailAddress(new LoginWithEmailAddressRequest
         {
             Email = login_email.text,
             Password = login_password.text,
@@ -73,38 +91,35 @@ public class PlayFabUserManager : MonoBehaviour
                 GetUserAccountInfo = true,
                 GetPlayerStatistics = true
             }
-        };
-        PlayFabClientAPI.LoginWithEmailAddress(loginRequest, OnLoginSuccess, OnLoginError);
-    }
-
-    private void OnLoginError(PlayFabError e)
-    {
-        loginErrorMessage.text = e.ErrorMessage;
-        DebugLogger.Instance.LogText(e.GenerateErrorReport());
-    }
-
-    private void OnLoginSuccess(LoginResult r)
-    {
-        PlayerStats.username = r.InfoResultPayload.AccountInfo.Username;
-        PlayerStats.ID = r.InfoResultPayload.AccountInfo.PlayFabId;
-        PlayerStats.displayName = r.InfoResultPayload.PlayerProfile.DisplayName;
-
-        foreach (var item in r.InfoResultPayload.PlayerStatistics)
+        },
+        result =>
         {
-            if (item.StatisticName == "Highscore")
-                PlayerStats.highscore = item.Value;
-            DebugLogger.Instance.LogText("PlayerStats.highscore: " + PlayerStats.highscore);
-        }
+            PlayerStats.username = result.InfoResultPayload.AccountInfo.Username;
+            PlayerStats.ID = result.InfoResultPayload.AccountInfo.PlayFabId;
+            PlayerStats.displayName = result.InfoResultPayload.PlayerProfile.DisplayName;
 
-        PlayFabAuthenticationAPI.GetEntityToken(new GetEntityTokenRequest(),
-        (entityResult) =>
+            foreach (var item in result.InfoResultPayload.PlayerStatistics)
+            {
+                if (item.StatisticName == "Highscore")
+                    PlayerStats.highscore = item.Value;
+                DebugLogger.Instance.LogText("PlayerStats.highscore: " + PlayerStats.highscore);
+            }
+
+            PlayFabAuthenticationAPI.GetEntityToken(new GetEntityTokenRequest(),
+            (entityResult) =>
+            {
+                PlayerStats.entityId = entityResult.Entity.Id;
+                PlayerStats.entityType = entityResult.Entity.Type;
+            }, DebugLogger.Instance.OnPlayFabError); // Define your own OnPlayFabError function to report errors
+
+            DebugLogger.Instance.LogText("Login Success!");
+            SceneTransition("Landing");
+        }, 
+        (error) =>
         {
-            PlayerStats.entityId = entityResult.Entity.Id;
-            PlayerStats.entityType = entityResult.Entity.Type;
-        }, DebugLogger.Instance.OnPlayFabError); // Define your own OnPlayFabError function to report errors
-
-        DebugLogger.Instance.LogText("Login Success!");
-        SceneTransition("Landing");
+            loginErrorMessage.text = error.ErrorMessage;
+            DebugLogger.Instance.LogText(error.GenerateErrorReport());
+        });
     }
 
     public void OnLogout()
@@ -117,34 +132,35 @@ public class PlayFabUserManager : MonoBehaviour
     {
         string customID = "GuestID_" + Random.Range(100000, 1000000); ; 
         var request = new LoginWithCustomIDRequest { CustomId = customID, CreateAccount = true };
-        PlayFabClientAPI.LoginWithCustomID(request, OnGuestLoginSuccess, DebugLogger.Instance.OnPlayFabError);
-    }
-
-    private void OnGuestLoginSuccess(LoginResult result)
-    {
-        SceneTransition("Landing");
+        PlayFabClientAPI.LoginWithCustomID(new LoginWithCustomIDRequest { CustomId = customID, CreateAccount = true },
+        result =>
+        {
+            SceneTransition("Landing");
+        }, 
+        (error) =>
+        {
+            loginErrorMessage.text = error.ErrorMessage;
+            DebugLogger.Instance.LogText(error.GenerateErrorReport());
+        });
     }
 
     public void OnResetPassword()
     {
-        var accountRecoveryRequest = new SendAccountRecoveryEmailRequest
+        PlayFabClientAPI.SendAccountRecoveryEmail(new SendAccountRecoveryEmailRequest
         {
             Email = recovery_email.text,
             TitleId = PlayFabSettings.TitleId
-        };
-        PlayFabClientAPI.SendAccountRecoveryEmail(accountRecoveryRequest, OnResetPasswordSuccess, OnResetPasswordError);
-    }
-
-    private void OnResetPasswordError(PlayFabError e)
-    {
-        recoveryErrorMessage.text = e.ErrorMessage;
-        DebugLogger.Instance.LogText(e.GenerateErrorReport());
-    }
-
-    private void OnResetPasswordSuccess(SendAccountRecoveryEmailResult r)
-    {
-        DebugLogger.Instance.LogText("Reset password sent");
-        recoveryErrorMessage.text = "Reset password email sent.";
+        }, 
+        result =>
+        {
+            DebugLogger.Instance.LogText("Reset password sent");
+            recoveryErrorMessage.text = "Reset password email sent.";
+        }, 
+        (error) =>
+        {
+            recoveryErrorMessage.text = error.ErrorMessage;
+            DebugLogger.Instance.LogText(error.GenerateErrorReport());
+        });
     }
 
     public void SceneTransition(string sceneName)

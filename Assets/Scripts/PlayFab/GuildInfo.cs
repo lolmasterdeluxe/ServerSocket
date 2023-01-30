@@ -24,5 +24,6 @@ public class GuildInfo : MonoBehaviour
     public void DisplayGroupInfo()
     {
         guildManager.GetGroupInfoWithParams(groupId, groupType);
+        guildManager.guildName.text = groupName;
     }
 }

@@ -8,65 +8,80 @@ using UnityEngine.UI;
 
 public class InventoryManager : MonoBehaviour
 {
+    [Header("Text GUI")]
     [SerializeField]
-    private TextMeshProUGUI inventoryText, shopMoneyText;
+    private TextMeshProUGUI inventoryText;
     [SerializeField]
-    private GameObject catalogContent, inventoryContent, shopItemPrefab, inventoryItemPrefab, confirmationPanel, outcomePanel;
+    private TextMeshProUGUI shopMoneyText;
+
+    [Header("Shop & Inventory Prefabs")]
+    [SerializeField]
+    private GameObject catalogContent;
+    [SerializeField]
+    private GameObject inventoryContent;
+    [SerializeField]
+    private GameObject shopItemPrefab;
+    [SerializeField]
+    private GameObject inventoryItemPrefab;
+    [SerializeField]
+    private GameObject confirmationPanel;
+    [SerializeField]
+    private GameObject outcomePanel;
+
+    [Header("Icons")]
     [SerializeField]
     private List<Sprite> itemIcons;
     private Sprite itemIcon;
+
+    [Header("Items for sale in shop")]
     public List<Item> shopItems;
     private string catalogVersion, itemId, virtualCurrency;
     private int price;
 
-    public void GetVirtualCurrencies()
+    #region Getting Virtual Currencies
+    public void GetVirtualCurrencies(TextMeshProUGUI moneyText = null)
     {
         PlayFabClientAPI.GetUserInventory(new GetUserInventoryRequest(),
-        r =>
+        result =>
         {
-            int coins = r.VirtualCurrency["SG"]; // Replace CN with your currency
+            int coins = result.VirtualCurrency["SG"];
             DebugLogger.Instance.LogText("Coins: " + coins);
-            shopMoneyText.text = coins.ToString();
-        }, DebugLogger.Instance.OnPlayFabError);
-    }
-    public void GetVirtualCurrencies(TextMeshProUGUI moneyText)
-    {
-        PlayFabClientAPI.GetUserInventory(new GetUserInventoryRequest(),
-        r =>
-        {
-            int coins = r.VirtualCurrency["SG"]; // Replace CN with your currency
-            DebugLogger.Instance.LogText("Coins: " + coins);
-            moneyText.text = coins.ToString();
+
+            if (moneyText == null)
+                shopMoneyText.text = coins.ToString();
+            else
+                moneyText.text = coins.ToString();
+
         }, DebugLogger.Instance.OnPlayFabError);
     }
 
     public void AddVirtualCurrencies(int amount)
     {
-        var addCurrencyRequest = new AddUserVirtualCurrencyRequest
+        PlayFabClientAPI.AddUserVirtualCurrency(new AddUserVirtualCurrencyRequest
         {
             VirtualCurrency = "SG",
             Amount = amount,
-        };
-        PlayFabClientAPI.AddUserVirtualCurrency(addCurrencyRequest,
-        r =>
+        },
+        result =>
         {
-            DebugLogger.Instance.LogText("Coins added: " + r.BalanceChange);
-            DebugLogger.Instance.LogText("Coins left: " + r.Balance);
+            DebugLogger.Instance.LogText("Coins added: " + result.BalanceChange);
+            DebugLogger.Instance.LogText("Coins left: " + result.Balance);
         }, DebugLogger.Instance.OnPlayFabError);
     }
+    #endregion
 
+    #region Catalog Items & Player Inventory
     public void GetCatalog()
     {
-        var catreq = new GetCatalogItemsRequest
-        {
-            CatalogVersion = "1.0" //update catalog names
-        };
         for (int i = 0; i < catalogContent.transform.childCount; ++i)
         {
             if (catalogContent.transform.GetChild(i).gameObject != null)
                 Destroy(catalogContent.transform.GetChild(i).gameObject);
         }
-        PlayFabClientAPI.GetCatalogItems(catreq,
+        PlayFabClientAPI.GetCatalogItems(new GetCatalogItemsRequest
+        {
+            CatalogVersion = "1.0" //update catalog names
+        },
         result =>
         {
             List<CatalogItem> items = result.Catalog;
@@ -85,8 +100,8 @@ public class InventoryManager : MonoBehaviour
 
     public void GetPlayerInventory()
     {
-        var UserInv = new GetUserInventoryRequest();
-        PlayFabClientAPI.GetUserInventory(UserInv, result =>
+        PlayFabClientAPI.GetUserInventory(new GetUserInventoryRequest(),
+        result =>
         {
             List<ItemInstance> ii = result.Inventory;
             DebugLogger.Instance.LogText("Player Inventory");
@@ -119,6 +134,10 @@ public class InventoryManager : MonoBehaviour
         }, DebugLogger.Instance.OnPlayFabError);
     }
 
+    #endregion
+
+    #region Purchasing Item
+
     public void ConfirmPurchase(string itemName, string catalogVersion, string itemId, string virtualCurrency, int price)
     {
         this.catalogVersion = catalogVersion;
@@ -132,41 +151,42 @@ public class InventoryManager : MonoBehaviour
 
     public void BuyItemRequest()
     {
-        var buyreq = new PurchaseItemRequest
+        PlayFabClientAPI.PurchaseItem(new PurchaseItemRequest
         {
             CatalogVersion = catalogVersion,
             ItemId = itemId,
             VirtualCurrency = virtualCurrency,
             Price = price
-        };
-        PlayFabClientAPI.PurchaseItem(buyreq,
-            result =>
-            {
-                DebugLogger.Instance.LogText("Bought!");
-                GetVirtualCurrencies();
-                outcomePanel.SetActive(true);
-                outcomePanel.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "Purchase successful!";
-            },
-            error =>
-            {
-                DebugLogger.Instance.LogText(error.ErrorMessage);
-                outcomePanel.SetActive(true);
-                outcomePanel.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "Error in purchase: <color=red>" + error.ErrorMessage + "</color>";
-            });
+        },
+        result =>
+        {
+            DebugLogger.Instance.LogText("Bought!");
+            GetVirtualCurrencies();
+            outcomePanel.SetActive(true);
+            outcomePanel.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "Purchase successful!";
+        },
+        error =>
+        {
+            DebugLogger.Instance.LogText(error.ErrorMessage);
+            outcomePanel.SetActive(true);
+            outcomePanel.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "Error in purchase: <color=red>" + error.ErrorMessage + "</color>";
+        });
     }
 
     public void ConsumeItemRequest(string itemInstanceId)
     {
-        var consumereq = new ConsumeItemRequest
+        PlayFabClientAPI.ConsumeItem(new ConsumeItemRequest
         {
             ConsumeCount = 1,
             ItemInstanceId = itemInstanceId
-        };
-        PlayFabClientAPI.ConsumeItem(consumereq,
-            result => {
-                DebugLogger.Instance.LogText("Item " + itemInstanceId + " consumed!");
-            }, DebugLogger.Instance.OnPlayFabError);
+        },
+        result => {
+            DebugLogger.Instance.LogText("Item " + itemInstanceId + " consumed!");
+        }, DebugLogger.Instance.OnPlayFabError);
     }
+    #endregion
+
+    #region Cleaning
 
     public void ClearShop()
     {
@@ -183,6 +203,9 @@ public class InventoryManager : MonoBehaviour
             Destroy(inventoryContent.transform.GetChild(i).gameObject);
         }
     }
+    #endregion
+
+    #region Icon Misc.
 
     private void SetIcon(CatalogItem item)
     {
@@ -249,5 +272,5 @@ public class InventoryManager : MonoBehaviour
                 break;
         }
     }
-
+    #endregion
 }

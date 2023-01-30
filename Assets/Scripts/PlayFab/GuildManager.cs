@@ -4,6 +4,7 @@ using PlayFab.DataModels;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 /// <summary>
@@ -15,14 +16,30 @@ public class GuildManager : MonoBehaviour
 {
     // A local cache of some bits of PlayFab data
     // This cache pretty much only serves this example , and assumes that entities are uniquely identifiable by EntityId alone, which isn't technically true. Your data cache will have to be better.
-    [Header("Guild Creation Input Fields")]
-    public TMP_InputField guildName;
-    public TMP_InputField guildTag;
-    public TMP_InputField guildRegion;
-    public TMP_InputField guildLanguage;
-    public TMP_InputField guildDescription;
+    [Header("Guild Panels")]
+    public GameObject guildListPanel;
+    public GameObject guildPanel;
+    public GameObject guildDataPanel;
+    public GameObject guildRecruitmentPage;
+    public GameObject guildInfoPage;
 
-    public TextMeshProUGUI recruitmentDescription;
+    [Header("Guild Creation Input Fields")]
+    public TMP_InputField guildNameInputField;
+    public TMP_InputField guildTagInputField;
+    public TMP_Dropdown guildLanguageDropdown;
+    public TMP_Dropdown guildRegionDropdown;
+    public TMP_InputField guildDescriptionInputField;
+
+    [Header("Guild Information GUI")]
+    public TextMeshProUGUI guildName;
+    public TextMeshProUGUI guildTag;
+    public TextMeshProUGUI guildLanguage;
+    public TextMeshProUGUI guildRegion;
+    public TextMeshProUGUI guildDescription;
+
+    [Header("Guild GUI")]
+    public TextMeshProUGUI inGuildName;
+    public TextMeshProUGUI inGuildBulletin;
 
     [Header("Guild List Prefabs")]
     public GameObject guildBarPrefab;
@@ -31,6 +48,14 @@ public class GuildManager : MonoBehaviour
     [Header("Guild Members Prefabs")]
     public GameObject memberBarPrefab;
     public Transform memberBarContainer;
+
+    [Header("Notification")]
+    public GameObject notificationPanel;
+    public TextMeshProUGUI notificationText;
+
+    [Header("Search bar")]
+    public TMP_InputField guildSearch;
+    private PlayFab.GroupsModels.EntityKey guildEntityKey;
     //public readonly HashSet<KeyValuePair<string, string>> EntityGroupPairs = new HashSet<KeyValuePair<string, string>>();
     //public readonly Dictionary<string, string> GroupNameById = new Dictionary<string, string>();
 
@@ -54,6 +79,9 @@ public class GuildManager : MonoBehaviour
     #region List Groups
     public void ResetGrouplist()
     {
+        guildDataPanel.SetActive(false);
+        guildRecruitmentPage.SetActive(false);
+        guildInfoPage.SetActive(false);
         for (int i = 0; i < guildBarContainer.childCount; ++i)
         {
             Destroy(guildBarContainer.GetChild(i).gameObject);
@@ -72,15 +100,21 @@ public class GuildManager : MonoBehaviour
         var request = new ListMembershipRequest { Entity = entityKey };
         PlayFabGroupsAPI.ListMembership(new ListMembershipRequest { Entity = entityKey },
         result => {
+            bool isInGuild = result.Groups == null;
+            guildListPanel.SetActive(isInGuild);
+            guildPanel.SetActive(!isInGuild);
             foreach (var pair in result.Groups)
             {
                 GameObject guildBar = Instantiate(guildBarPrefab, guildBarContainer);
                 guildBar.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = pair.GroupName;
                 guildBar.GetComponent<GuildInfo>().SetGroupData(pair.GroupName, pair.Group.Id, pair.Group.Type);
-
+                guildEntityKey = pair.Group;
+                ListGroupMembers(pair.Group);
+                inGuildName.text = pair.GroupName;
                 DebugLogger.Instance.LogText("Showing group: " + pair.GroupName);
             }
-        }, (error) => {
+        }, 
+        (error) => {
             DebugLogger.Instance.LogText(error.GenerateErrorReport());
         });
     }
@@ -89,12 +123,12 @@ public class GuildManager : MonoBehaviour
     #region Group Creation and deletion
     public void CreateGroupWithParams()
     {
-        CreateGroup(guildName.text, EntityKeyMaker(PlayerStats.entityId, PlayerStats.entityType));
+        CreateGroup(guildNameInputField.text, EntityKeyMaker(PlayerStats.entityId, PlayerStats.entityType));
     }
     private void CreateGroup(string groupName, PlayFab.GroupsModels.EntityKey entityKey)
     {
         // A player-controlled entity creates a new group
-        PlayFabGroupsAPI.CreateGroup(new CreateGroupRequest { GroupName = groupName, Entity = entityKey, CustomTags = new Dictionary<string, string>() { { "Tag", guildTag.text } } },
+        PlayFabGroupsAPI.CreateGroup(new CreateGroupRequest { GroupName = groupName, Entity = entityKey, CustomTags = new Dictionary<string, string>() { { "Tag", guildTagInputField.text } } },
         result => {
             Debug.Log("Group Created: " + result.GroupName + " - " + result.Group.Id);
 
@@ -167,20 +201,74 @@ public class GuildManager : MonoBehaviour
     #endregion
 
     #region List Group members
+    public void ResetMemberlist()
+    {
+        for (int i = 0; i < memberBarContainer.childCount; ++i)
+        {
+            Destroy(memberBarContainer.GetChild(i).gameObject);
+        }
+    }
+    public void ListGroupMembersWithParams()
+    {
+        ListGroupMembers(guildEntityKey);
+    }
     private void ListGroupMembers(PlayFab.GroupsModels.EntityKey entityKey)
     {
+        ResetMemberlist();
         PlayFabGroupsAPI.ListGroupMembers(new ListGroupMembersRequest { Group = entityKey }, 
         result =>
         {
-            for (int i = 0;i < result.Members.Count; ++i)
+            for (int i = 0; i < result.Members[0].Members.Count; ++i)
             {
                 GameObject memberBar = Instantiate(memberBarPrefab, memberBarContainer);
-                memberBar.transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = result.Members[i].Members[i].Key.Id;
+                SetMemberProfile(result.Members[0].Members[i].Key, memberBar);
+               
+                memberBar.transform.GetChild(3).GetComponent<TextMeshProUGUI>().text = "Role: " + result.Members[0].RoleName;
+                DebugLogger.Instance.LogText("Guild member listed: " + result.Members[0].Members[i].Key.Id);
             }
-        }
-        , (error) =>
+        }, 
+        (error) =>
         {
+            DebugLogger.Instance.LogText(error.GenerateErrorReport());
+        });
+    }
 
+    private void SetMemberProfile(PlayFab.GroupsModels.EntityKey entityKey, GameObject memberBar)
+    {
+        PlayFabProfilesAPI.GetProfile(new PlayFab.ProfilesModels.GetEntityProfileRequest { Entity = new PlayFab.ProfilesModels.EntityKey {Id = entityKey.Id, Type = entityKey.Type } },
+        result =>
+        {
+            memberBar.transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = result.Profile.DisplayName;
+            DebugLogger.Instance.LogText("Guild member display name set: " + result.Profile.DisplayName);
+        }, 
+        (error) =>
+        {
+            DebugLogger.Instance.LogText(error.GenerateErrorReport());
+        });
+    }
+
+    #endregion
+
+    #region Search for group
+    public void SearchForGuild(TMP_InputField guildName)
+    {
+        GetGroup(guildName.text);
+    }
+    private void GetGroup(string groupName)
+    {
+        ResetGrouplist();
+        PlayFabGroupsAPI.GetGroup(new GetGroupRequest { GroupName = groupName }, 
+        result => 
+        {
+            GameObject guildBar = Instantiate(guildBarPrefab, guildBarContainer);
+            guildBar.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = result.GroupName;
+            guildBar.GetComponent<GuildInfo>().SetGroupData(result.GroupName, result.Group.Id, result.Group.Type);
+            DebugLogger.Instance.LogText("Searched for group: " + result.GroupName);
+        }, 
+        (error) => {
+            notificationPanel.SetActive(true);
+            notificationText.text = "No such group of that name exists!";
+            DebugLogger.Instance.LogText(error.GenerateErrorReport());
         });
     }
 
@@ -190,11 +278,11 @@ public class GuildManager : MonoBehaviour
 
     private void SetGroupInfo(PlayFab.DataModels.EntityKey entity)
     {
-        GroupData groupData = new GroupData(guildLanguage.text, guildRegion.text, guildDescription.text);
+        GroupData groupData = new GroupData(guildTagInputField.text, guildLanguageDropdown.itemText.text, guildRegionDropdown.itemText.text, guildDescriptionInputField.text);
         string groupJsonData = JsonUtility.ToJson(groupData);
         Debug.Log("JSON data prepared" + groupJsonData);
 
-        var dataList = new List<SetObject>()
+        List<SetObject> dataList = new List<SetObject>()
         {
             new SetObject()
             {
@@ -239,7 +327,13 @@ public class GuildManager : MonoBehaviour
         DebugLogger.Instance.LogText(groupDataResult.ToJson());
 
         GroupData groupJsonData = JsonUtility.FromJson<GroupData>(groupDataResult.DataObject.ToString());
-        recruitmentDescription.text = groupJsonData.description;
+        guildTag.text = groupJsonData.tag;
+        guildLanguage.text = groupJsonData.language;
+        guildRegion.text = groupJsonData.region;
+        guildDescription.text = groupJsonData.description;
+        guildDataPanel.SetActive(true);
+        guildRecruitmentPage.SetActive(true);
+        guildInfoPage.SetActive(false);
     }
 
     #endregion
@@ -305,12 +399,14 @@ public class GuildManager : MonoBehaviour
 [System.Serializable]
 public class GroupData
 {
+    public string tag;
     public string language;
     public string region;
     public string description;
 
-    public GroupData(string _language, string _region, string _description)
+    public GroupData(string _tag, string _language, string _region, string _description)
     {
+        tag = _tag;
         language = _language;
         region = _region;
         description = _description;

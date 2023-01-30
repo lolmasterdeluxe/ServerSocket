@@ -15,11 +15,19 @@ public class InventoryItemManager : MonoBehaviour
     public int itemAmt;
 
     [SerializeField]
-    private TextMeshProUGUI itemName, itemType, itemAmount;
+    private TextMeshProUGUI itemName;
     [SerializeField]
-    private Image itemIcon, itemEquippedCheckbox;
+    private TextMeshProUGUI itemType;
     [SerializeField]
-    private Sprite ticked, unticked;
+    private TextMeshProUGUI itemAmount;
+    [SerializeField]
+    private Image itemIcon;
+    [SerializeField]
+    private Image itemEquippedCheckbox;
+    [SerializeField]
+    private Sprite ticked;
+    [SerializeField]
+    private Sprite unticked;
     public Item item;
     [SerializeField]
     private bool isEquipped = false;
