@@ -33,7 +33,9 @@ public class PlayFabUserManager : MonoBehaviour
     [Header("Error Message GUI")]
     [SerializeField]
     private TextMeshProUGUI loginErrorMessage;
+    [SerializeField]
     private TextMeshProUGUI registerErrorMessage;
+    [SerializeField]
     private TextMeshProUGUI recoveryErrorMessage;
 
     private void Start()

@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
+using Photon.Realtime;
+using TMPro;
 
 public class Launcher : MonoBehaviourPunCallbacks
 {
@@ -15,14 +17,23 @@ public class Launcher : MonoBehaviourPunCallbacks
         {
             PhotonNetwork.ConnectUsingSettings();
         }
+        if (PlayerStats.displayName != "")
+        {
+            PhotonNetwork.Instantiate(PlayerPrefab.name, new Vector3(0, -3.0f, 0), Quaternion.identity);
+        }
     }
 
     public override void OnConnectedToMaster()
     {
-        if(!isOffline)
+        if (!isOffline)
         {
-            Debug.Log("Connected");
-            PhotonNetwork.JoinRandomOrCreateRoom();
+            DebugLogger.Instance.LogText("Connected");
+            RoomOptions roomOptions = new RoomOptions();
+            roomOptions.IsVisible = true;
+            roomOptions.MaxPlayers = 0;
+            PhotonNetwork.JoinOrCreateRoom("Default Room", roomOptions, TypedLobby.Default);
+            PhotonNetwork.NickName = PlayerStats.displayName;
+            DebugLogger.Instance.LogText("Joining room...");
         }
     }
 
@@ -30,14 +41,14 @@ public class Launcher : MonoBehaviourPunCallbacks
     {
         if (!isOffline)
         {
-            Debug.Log("Joined");
-            PhotonNetwork.Instantiate(PlayerPrefab.name, new Vector3(0, -3.0f, 0), Quaternion.identity);
+            DebugLogger.Instance.LogText("Room joined successfully");
+            GameObject player = PhotonNetwork.Instantiate(PlayerPrefab.name, new Vector3(0, -3.0f, 0), Quaternion.identity);
+            player.name = PlayerStats.displayName;
         }
-    }    
+    }
 
-    // Update is called once per frame
-    void Update()
+    public void Logout()
     {
-        
+        PhotonNetwork.Disconnect();
     }
 }

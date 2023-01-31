@@ -56,6 +56,7 @@ public class GuildManager : MonoBehaviour
     [Header("Search bar")]
     public TMP_InputField guildSearch;
     private PlayFab.GroupsModels.EntityKey guildEntityKey;
+    public string guildToJoinId;
     //public readonly HashSet<KeyValuePair<string, string>> EntityGroupPairs = new HashSet<KeyValuePair<string, string>>();
     //public readonly Dictionary<string, string> GroupNameById = new Dictionary<string, string>();
 
@@ -97,12 +98,21 @@ public class GuildManager : MonoBehaviour
     }
     private void ListGroups(PlayFab.GroupsModels.EntityKey entityKey)
     {
-        var request = new ListMembershipRequest { Entity = entityKey };
         PlayFabGroupsAPI.ListMembership(new ListMembershipRequest { Entity = entityKey },
         result => {
-            bool isInGuild = result.Groups == null;
-            guildListPanel.SetActive(isInGuild);
-            guildPanel.SetActive(!isInGuild);
+            if (result.Groups.Count == 0)
+            {
+                guildListPanel.SetActive(true);
+                guildPanel.SetActive(false);
+                DebugLogger.Instance.LogText("Groups are null");
+            }
+            else
+            {
+                guildListPanel.SetActive(false);
+                guildPanel.SetActive(true);
+                DebugLogger.Instance.LogText("Groups not null");
+            }
+
             foreach (var pair in result.Groups)
             {
                 GameObject guildBar = Instantiate(guildBarPrefab, guildBarContainer);
@@ -343,52 +353,81 @@ public class GuildManager : MonoBehaviour
     public void InviteToGroup(string groupId, PlayFab.GroupsModels.EntityKey entityKey)
     {
         // A player-controlled entity invites another player-controlled entity to an existing group
-        var request = new InviteToGroupRequest { Group = EntityKeyMaker(groupId), Entity = entityKey };
-        PlayFabGroupsAPI.InviteToGroup(request, OnInvite, OnSharedError);
+        PlayFabGroupsAPI.InviteToGroup(new InviteToGroupRequest { Group = EntityKeyMaker(groupId), Entity = entityKey },
+        result =>
+        {
+            OnInvite(result);
+        },
+        error =>
+        {
+            DebugLogger.Instance.LogText(error.GenerateErrorReport());
+        });
     }
     public void OnInvite(InviteToGroupResponse response)
     {
         var prevRequest = (InviteToGroupRequest)response.Request;
 
         // Presumably, this would be part of a separate process where the recipient reviews and accepts the request
-        var request = new AcceptGroupInvitationRequest { Group = EntityKeyMaker(prevRequest.Group.Id), Entity = prevRequest.Entity };
-        PlayFabGroupsAPI.AcceptGroupInvitation(request, OnAcceptInvite, OnSharedError);
+
+        PlayFabGroupsAPI.AcceptGroupInvitation(new AcceptGroupInvitationRequest { Group = EntityKeyMaker(prevRequest.Group.Id), Entity = prevRequest.Entity },
+        result =>
+        {
+            var prevRequest = (AcceptGroupInvitationRequest)response.Request;
+            Debug.Log("Entity Added to Group: " + prevRequest.Entity.Id + " to " + prevRequest.Group.Id);
+        },
+        error =>
+        {
+            DebugLogger.Instance.LogText(error.GenerateErrorReport());
+        });
     }
-    public void OnAcceptInvite(EmptyResponse response)
+
+    public void JoinGroupWithParams()
     {
-        var prevRequest = (AcceptGroupInvitationRequest)response.Request;
-        Debug.Log("Entity Added to Group: " + prevRequest.Entity.Id + " to " + prevRequest.Group.Id);
+        ApplyToGroup(guildToJoinId, new PlayFab.GroupsModels.EntityKey { Id = PlayerStats.entityId , Type = PlayerStats.entityType});
     }
 
     public void ApplyToGroup(string groupId, PlayFab.GroupsModels.EntityKey entityKey)
     {
-        // A player-controlled entity applies to join an existing group (of which they are not already a member)
-        var request = new ApplyToGroupRequest { Group = EntityKeyMaker(groupId), Entity = entityKey };
-        PlayFabGroupsAPI.ApplyToGroup(request, OnApply, OnSharedError);
+        PlayFabGroupsAPI.ApplyToGroup(new ApplyToGroupRequest { Group = EntityKeyMaker(groupId), Entity = entityKey },  
+            result=> 
+            {
+                var prevRequest1 = (ApplyToGroupRequest)result.Request;
+                AcceptApplication(prevRequest1.Group, prevRequest1.Entity);
+            },
+            error=> 
+            {
+                DebugLogger.Instance.LogText(error.GenerateErrorReport());
+            });
     }
-    public void OnApply(ApplyToGroupResponse response)
+    public void AcceptApplication(PlayFab.GroupsModels.EntityKey groupKey, PlayFab.GroupsModels.EntityKey entityKey)
     {
-        var prevRequest = (ApplyToGroupRequest)response.Request;
-
         // Presumably, this would be part of a separate process where the recipient reviews and accepts the request
-        var request = new AcceptGroupApplicationRequest { Group = prevRequest.Group, Entity = prevRequest.Entity };
-        PlayFabGroupsAPI.AcceptGroupApplication(request, OnAcceptApplication, OnSharedError);
-    }
-    public void OnAcceptApplication(EmptyResponse response)
-    {
-        var prevRequest = (AcceptGroupApplicationRequest)response.Request;
-        Debug.Log("Entity Added to Group: " + prevRequest.Entity.Id + " to " + prevRequest.Group.Id);
+        PlayFabGroupsAPI.AcceptGroupApplication(new AcceptGroupApplicationRequest { Group = groupKey, Entity = entityKey },
+        result =>
+        {
+            var prevRequest2 = (AcceptGroupApplicationRequest)result.Request;
+            Debug.Log("Entity Added to Group: " + prevRequest2.Entity.Id + " to " + prevRequest2.Group.Id);
+        },
+        error =>
+        {
+            DebugLogger.Instance.LogText(error.GenerateErrorReport());
+        });
     }
 
     #endregion
 
     #region Group Administrative Functions
+    public void LeaveGroup()
+    {
+        KickMember(guildEntityKey.Id, new PlayFab.GroupsModels.EntityKey { Id = PlayerStats.entityId, Type = PlayerStats.entityType });
+    }
     public void KickMember(string groupId, PlayFab.GroupsModels.EntityKey entityKey)
     {
         PlayFabGroupsAPI.RemoveMembers(new RemoveMembersRequest { Group = EntityKeyMaker(groupId), Members = new List<PlayFab.GroupsModels.EntityKey> { entityKey } },
         result => {
             var prevRequest = (RemoveMembersRequest)result.Request;
             Debug.Log("Entity kicked from Group: " + prevRequest.Members[0].Id + " to " + prevRequest.Group.Id);
+            ListGroupsWithParams();
         }, (error) => {
             DebugLogger.Instance.LogText(error.GenerateErrorReport());
         });

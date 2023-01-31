@@ -2,13 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
+using Photon.Realtime;
 using TMPro;
 using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviourPunCallbacks
 {
-    private float moveSpeed = 7.0f;
-    private bool canMove = true;
+    public float moveSpeed = 7.0f;
+    public bool canMove = true;
 
     private Rigidbody2D rigidBody2D;
     private BoxCollider2D boxCollider;
@@ -22,6 +23,7 @@ public class Player : MonoBehaviourPunCallbacks
     private GameObject leaderPanel;
     private GameObject eButton;
 
+    public GameObject displayName;
     public bool isOffline = false;
 
     enum CONTACT_TYPE
@@ -54,10 +56,16 @@ public class Player : MonoBehaviourPunCallbacks
 
         canMove = true;
         eButton.SetActive(false);
+        photonView.RPC("DisplayName", RpcTarget.AllBuffered);
     }
 
     // Update is called once per frame
     void Update()
+    {
+        HandleInputs();
+    }
+
+    public void HandleInputs()
     {
         if (photonView.IsMine || isOffline)
         {
@@ -91,9 +99,7 @@ public class Player : MonoBehaviourPunCallbacks
                             GoToGame();
                             break;
                     }
-                    canMove = false;
-                    rigidBody2D.velocity = Vector3.zero;
-                    animator.enabled = false;
+                    LockPlayer(true);
                     eButton.SetActive(false);
                 }
                 else if (Input.GetKeyDown(KeyCode.R))
@@ -122,13 +128,13 @@ public class Player : MonoBehaviourPunCallbacks
 
     private void UpdateAnimationUpdate()
     {
-        if(directionX > 0f)
+        if (directionX > 0f)
         {
             animator.SetBool("Is_Running", true);
             spriteRenderer.flipX = false;
 
         }
-        else if(directionX < 0f)
+        else if (directionX < 0f)
         {
             animator.SetBool("Is_Running", true);
             spriteRenderer.flipX = true;
@@ -139,6 +145,7 @@ public class Player : MonoBehaviourPunCallbacks
         }
     }
 
+    #region Trigger Colliders
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (photonView.IsMine || isOffline)
@@ -186,13 +193,29 @@ public class Player : MonoBehaviourPunCallbacks
         }
     }
 
+    #endregion
+
     public void ClosePanel()
     {
         if (photonView.IsMine || isOffline)
         {
-            canMove = true;
-            animator.enabled = true;
+            LockPlayer(false);
             eButton.SetActive(true);
         }
+    }
+
+    public void LockPlayer(bool isTrue)
+    {
+        canMove = !isTrue;
+        rigidBody2D.velocity = Vector3.zero;
+        animator.enabled = !isTrue;
+    }
+
+
+    [PunRPC]
+    public void DisplayName()
+    {
+        displayName.SetActive(true);
+        displayName.GetComponent<TextMeshProUGUI>().text = PhotonNetwork.NickName;
     }
 }
