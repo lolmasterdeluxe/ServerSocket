@@ -56,7 +56,7 @@ public class Player : MonoBehaviourPunCallbacks
 
         canMove = true;
         eButton.SetActive(false);
-        photonView.RPC("DisplayName", RpcTarget.AllBuffered);
+        photonView.RPC("DisplayName", RpcTarget.AllBuffered, PhotonNetwork.NickName);
     }
 
     // Update is called once per frame
@@ -132,7 +132,6 @@ public class Player : MonoBehaviourPunCallbacks
         {
             animator.SetBool("Is_Running", true);
             spriteRenderer.flipX = false;
-
         }
         else if (directionX < 0f)
         {
@@ -143,6 +142,9 @@ public class Player : MonoBehaviourPunCallbacks
         {
             animator.SetBool("Is_Running", false);
         }
+
+        if (!isOffline)
+            photonView.RPC("FlipSprite", RpcTarget.AllBuffered, spriteRenderer.flipX);
     }
 
     #region Trigger Colliders
@@ -213,9 +215,16 @@ public class Player : MonoBehaviourPunCallbacks
 
 
     [PunRPC]
-    public void DisplayName()
+    private void DisplayName(string nickName)
     {
         displayName.SetActive(true);
-        displayName.GetComponent<TextMeshProUGUI>().text = PhotonNetwork.NickName;
+        displayName.GetComponent<TextMeshProUGUI>().text = nickName;
+        gameObject.name = nickName;
+    }
+
+    [PunRPC]
+    private void FlipSprite(bool isTrue)
+    {
+        spriteRenderer.flipX = isTrue;
     }
 }

@@ -7768,6 +7768,7 @@ MonoBehaviour:
   loginErrorMessage: {fileID: 781737568}
   registerErrorMessage: {fileID: 950406995}
   recoveryErrorMessage: {fileID: 193843884}
+  presetAccount: 1
 --- !u!114 &1895324619
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -10,7 +10,6 @@ using Photon.Realtime;
 public class ChatBoxManager : RaiseEvents, IOnEventCallback
 {
     public TMP_InputField chatInputField;
-    public Transform chatboxContainer;
     public GameObject player;
 
     private void Update()
@@ -29,11 +28,12 @@ public class ChatBoxManager : RaiseEvents, IOnEventCallback
     {
         if (player != null)
         {
-            chatboxContainer = player.transform.GetChild(0);
             if (chatInputField.gameObject.activeInHierarchy && !string.IsNullOrEmpty(chatInputField.text) && Input.GetKeyDown(KeyCode.Return))
             {
+                Vector3 chatboxPosition = new Vector3(player.transform.localPosition.x, player.transform.localPosition.y + 2f, player.transform.localPosition.z);
+                object[] content = new object[] { chatInputField.text, chatboxPosition, PlayerStats.displayName };
                 RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
-                PhotonNetwork.RaiseEvent((byte)EventCodes.ChatEventCode, null, raiseEventOptions, SendOptions.SendReliable);
+                PhotonNetwork.RaiseEvent((byte)EventCodes.ChatEventCode, content, raiseEventOptions, SendOptions.SendReliable);
             }
         }
     }
@@ -44,12 +44,13 @@ public class ChatBoxManager : RaiseEvents, IOnEventCallback
         if (eventCode == (byte)EventCodes.ChatEventCode)
         {
             object[] data = (object[])photonEvent.CustomData;
-            Vector3 chatboxPosition = new Vector3(player.transform.localPosition.x, player.transform.localPosition.y + 2f, player.transform.localPosition.z);
-            GameObject chatbox = PhotonNetwork.Instantiate("Chatbox", chatboxPosition, Quaternion.identity);
-            chatbox.transform.SetParent(chatboxContainer);
-            chatbox.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = chatInputField.text;
+            GameObject chatbox = PhotonNetwork.Instantiate("Chatbox", (Vector3)data[1], Quaternion.identity);
+            Transform playerChatboxContainer = GameObject.Find((string)data[2]).transform.GetChild(0);
+            chatbox.transform.SetParent(playerChatboxContainer);
+            chatbox.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = (string)data[0];
             StartCoroutine(chatboxAnimation(chatbox));
         }
+        DebugLogger.Instance.LogText("Chat event received!");
     }
 
     public IEnumerator chatboxAnimation(GameObject chatbox)

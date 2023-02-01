@@ -35105,6 +35105,9 @@ MonoBehaviour:
   login_password: {fileID: 0}
   recovery_email: {fileID: 0}
   loginErrorMessage: {fileID: 0}
+  registerErrorMessage: {fileID: 0}
+  recoveryErrorMessage: {fileID: 0}
+  presetAccount: 0
 --- !u!4 &1332378893
 Transform:
   m_ObjectHideFlags: 0
@@ -41463,7 +41466,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   chatInputField: {fileID: 1537672190}
-  chatboxContainer: {fileID: 0}
   player: {fileID: 0}
 --- !u!1 &1454300312
 GameObject:
@@ -58394,6 +58396,18 @@ PrefabInstance:
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 1473065962}
+    - target: {fileID: 1793753063800070365, guid: d2f77833ed7b1ba4c9b39a734be6ca91, type: 3}
+      propertyPath: m_ScaleModel.SynchronizeEnabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1793753063800070365, guid: d2f77833ed7b1ba4c9b39a734be6ca91, type: 3}
+      propertyPath: m_RotationModel.InterpolateOption
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1793753063800070365, guid: d2f77833ed7b1ba4c9b39a734be6ca91, type: 3}
+      propertyPath: m_RotationModel.SynchronizeEnabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7239993422015540862, guid: d2f77833ed7b1ba4c9b39a734be6ca91, type: 3}
       propertyPath: sceneViewId
       value: 1

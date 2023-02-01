@@ -43,7 +43,6 @@ public class Launcher : MonoBehaviourPunCallbacks
         {
             DebugLogger.Instance.LogText("Room joined successfully");
             GameObject player = PhotonNetwork.Instantiate(PlayerPrefab.name, new Vector3(0, -3.0f, 0), Quaternion.identity);
-            player.name = PlayerStats.displayName;
         }
     }
 

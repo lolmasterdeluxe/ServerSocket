@@ -38,13 +38,19 @@ public class PlayFabUserManager : MonoBehaviour
     [SerializeField]
     private TextMeshProUGUI recoveryErrorMessage;
 
+    [SerializeField]
+    private bool presetAccount;
+
     private void Start()
     {
         // Temporary Instant Login
-        login_email.text = "kiddrifdi@gmail.com";
-        login_password.text = "Revolver360";
-        login_email.ForceLabelUpdate();
-        login_password.ForceLabelUpdate();
+        if (presetAccount)
+        {
+            login_email.text = "kiddrifdi@gmail.com";
+            login_password.text = "Revolver360";
+            login_email.ForceLabelUpdate();
+            login_password.ForceLabelUpdate();
+        }
     }
 
     public void OnRegister()
