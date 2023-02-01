@@ -25,6 +25,7 @@ public class Player : MonoBehaviourPunCallbacks
 
     public GameObject displayName;
     public bool isOffline = false;
+    public PlayerOptionsManager playerOptionsManager;
 
     enum CONTACT_TYPE
     {
@@ -46,6 +47,7 @@ public class Player : MonoBehaviourPunCallbacks
         boxCollider = GetComponent<BoxCollider2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
+        playerOptionsManager = GetComponent<PlayerOptionsManager>();
 
         guildPanel = GameObject.FindGameObjectWithTag("Guild"); 
         shopPanel = GameObject.FindGameObjectWithTag("Shop");
@@ -56,16 +58,17 @@ public class Player : MonoBehaviourPunCallbacks
 
         canMove = true;
         eButton.SetActive(false);
-        photonView.RPC("DisplayName", RpcTarget.AllBuffered, PhotonNetwork.NickName);
+        photonView.RPC("SetProfile", RpcTarget.AllBuffered, PhotonNetwork.NickName, PlayerStats.ID);
     }
 
     // Update is called once per frame
     void Update()
     {
-        HandleInputs();
+        HandleMovement();
+        HandleBuildingInteraction();
     }
 
-    public void HandleInputs()
+    public void HandleMovement()
     {
         if (photonView.IsMine || isOffline)
         {
@@ -74,35 +77,7 @@ public class Player : MonoBehaviourPunCallbacks
                 directionX = Input.GetAxisRaw("Horizontal");
                 rigidBody2D.velocity = new Vector2(directionX * moveSpeed, rigidBody2D.velocity.y);
 
-                //If we press E
-                if (Input.GetKeyDown(KeyCode.E))
-                {
-                    switch (contactType)
-                    {
-                        case CONTACT_TYPE.SHOP:
-                            shopPanel.GetComponent<ShopController>().OpenPanel(ClosePanel);
-                            break;
-
-                        case CONTACT_TYPE.FRIEND:
-                            friendsPanel.GetComponent<FriendsController>().OpenPanel(ClosePanel);
-                            break;
-
-                        case CONTACT_TYPE.LEADERBOARD:
-                            leaderPanel.GetComponent<LeaderboardController>().OpenPanel(ClosePanel);
-                            break;
-
-                        case CONTACT_TYPE.GUILD:
-                            guildPanel.GetComponent<GuildController>().OpenPanel(ClosePanel);
-                            break;
-
-                        case CONTACT_TYPE.GAME:
-                            GoToGame();
-                            break;
-                    }
-                    LockPlayer(true);
-                    eButton.SetActive(false);
-                }
-                else if (Input.GetKeyDown(KeyCode.R))
+                if (Input.GetKeyDown(KeyCode.R))
                 {
                     animator.SetTrigger("Is_Dancing");
                 }
@@ -110,6 +85,39 @@ public class Player : MonoBehaviourPunCallbacks
                 //Update the animation
                 UpdateAnimationUpdate();
             }
+        }
+    }
+
+    public void HandleBuildingInteraction()
+    {
+        //If we press E
+        if (eButton.activeInHierarchy && Input.GetKeyDown(KeyCode.E))
+        {
+            DebugLogger.Instance.LogText("Detecting 'E' input");
+            switch (contactType)
+            {
+                case CONTACT_TYPE.SHOP:
+                    shopPanel.GetComponent<ShopController>().OpenPanel(ClosePanel);
+                    break;
+
+                case CONTACT_TYPE.FRIEND:
+                    friendsPanel.GetComponent<FriendsController>().OpenPanel(ClosePanel);
+                    break;
+
+                case CONTACT_TYPE.LEADERBOARD:
+                    leaderPanel.GetComponent<LeaderboardController>().OpenPanel(ClosePanel);
+                    break;
+
+                case CONTACT_TYPE.GUILD:
+                    guildPanel.GetComponent<GuildController>().OpenPanel(ClosePanel);
+                    break;
+
+                case CONTACT_TYPE.GAME:
+                    GoToGame();
+                    break;
+            }
+            LockPlayer(true);
+            eButton.SetActive(false);
         }
     }
 
@@ -182,6 +190,8 @@ public class Player : MonoBehaviourPunCallbacks
                 eButton.SetActive(true);
                 currentText.text = "Game";
             }
+
+            DebugLogger.Instance.LogText("Is within range of bulding: " + contactType);
         }
     }
 
@@ -215,10 +225,11 @@ public class Player : MonoBehaviourPunCallbacks
 
 
     [PunRPC]
-    private void DisplayName(string nickName)
+    private void SetProfile(string nickName, string playFabId)
     {
         displayName.SetActive(true);
         displayName.GetComponent<TextMeshProUGUI>().text = nickName;
+        playerOptionsManager.playFabId = playFabId;
         gameObject.name = nickName;
     }
 

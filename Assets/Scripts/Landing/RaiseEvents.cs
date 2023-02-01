@@ -26,4 +26,5 @@ public class RaiseEvents : MonoBehaviourPun, IOnEventCallback
 public enum EventCodes
 {
     ChatEventCode = 0,
+    RequestTradeEventCode = 1,
 }

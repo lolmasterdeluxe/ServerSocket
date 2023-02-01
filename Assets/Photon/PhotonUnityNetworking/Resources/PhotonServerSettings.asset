@@ -38,6 +38,7 @@ MonoBehaviour:
   - DestroyRpc
   - DisplayName
   - FlipSprite
+  - SetProfile
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1
