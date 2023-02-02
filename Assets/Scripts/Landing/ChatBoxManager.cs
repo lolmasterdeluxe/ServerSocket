@@ -11,6 +11,7 @@ public class ChatBoxManager : RaiseEvents, IOnEventCallback
 {
     public TMP_InputField chatInputField;
     public GameObject player;
+    public GameObject eButton;
 
     private void Update()
     {
@@ -21,6 +22,7 @@ public class ChatBoxManager : RaiseEvents, IOnEventCallback
     {
         player = GameObject.Find(PlayerStats.displayName);
         chatBox.SetActive(!chatBox.activeInHierarchy);
+        eButton.SetActive(false);
         player.GetComponent<Player>().LockPlayer(chatBox.activeInHierarchy);
     }
 

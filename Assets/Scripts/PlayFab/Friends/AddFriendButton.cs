@@ -10,20 +10,31 @@ public class AddFriendButton : MonoBehaviour
     FriendManager friendManager;
     [SerializeField]
     private TextMeshProUGUI displayName;
+    public string playFabId;
     // Start is called before the first frame update
     void Start()
     {
         friendManager = FindObjectOfType<FriendManager>();
     }
 
-    public void OnAddFriend() // To add friend based on display name
+    public void SendFriendRequest() // To add friend based on display name
     {
-        friendManager.SendFriendRequest(FriendIdType.DisplayName, displayName.text);
-        // friendManager.OnReturnFriendRequest(displayName.text);
+        // friendManager.AddFriend(FriendIdType.DisplayName, displayName.text);
+        friendManager.SendFriendRequest(displayName.text, PlayerStats.ID, playFabId);
     }
 
-    public void OnUnfriend() // To add friend based on display name
+    public void Unfriend() // To add friend based on display name
     {
         friendManager.OnUnfriendConfirmation(displayName.text);
+    }
+
+    public void AcceptFriendRequest()
+    {
+        friendManager.AcceptFriendRequest(displayName.text, PlayerStats.ID, playFabId);
+    }
+
+    public void DeclineFriendRequest()
+    {
+        friendManager.DeclineFriendRequest(PlayerStats.ID, playFabId);
     }
 }

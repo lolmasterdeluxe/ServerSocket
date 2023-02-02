@@ -123,10 +123,10 @@ public class Player : MonoBehaviourPunCallbacks
 
     public void GoToGame()
     {
-        if(!isOffline)
+        if (!isOffline)
         {
-            PhotonNetwork.Disconnect();
-            PhotonNetwork.LoadLevel(1);
+            //PhotonNetwork.Disconnect();
+            PhotonNetwork.LoadLevel(2);
         }
         else
         {

@@ -46,8 +46,8 @@ public class PlayFabUserManager : MonoBehaviour
         // Temporary Instant Login
         if (presetAccount)
         {
-            login_email.text = "kiddrifdi@gmail.com";
-            login_password.text = "Revolver360";
+            login_email.text = "default@default.com";
+            login_password.text = "Password123";
             login_email.ForceLabelUpdate();
             login_password.ForceLabelUpdate();
         }

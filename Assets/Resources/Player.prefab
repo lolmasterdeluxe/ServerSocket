@@ -294,6 +294,7 @@ GameObject:
   - component: {fileID: 8875753840370992059}
   - component: {fileID: 8875753840370992060}
   - component: {fileID: 8875753840370992056}
+  - component: {fileID: 4444253640617844876}
   - component: {fileID: 8875753840370992055}
   - component: {fileID: 1793753063800070365}
   - component: {fileID: 7239993422015540862}
@@ -436,6 +437,22 @@ MonoBehaviour:
   canMove: 1
   displayName: {fileID: 8722079563258905813}
   isOffline: 0
+  playerOptionsManager: {fileID: 0}
+--- !u!114 &4444253640617844876
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8875753840370992061}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5ffaacd628cb6049bed083fb96f7c4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playFabId: 
+  tradeManager: {fileID: 0}
+  friendManager: {fileID: 0}
 --- !u!95 &8875753840370992055
 Animator:
   serializedVersion: 5

@@ -224,6 +224,26 @@ public class PlayFabDataManager : MonoBehaviour
             }
         );
     }
+
+    public System.DateTime GetUserLastLogin(string playFabId)
+    {
+        System.DateTime lastLogin = new System.DateTime();
+        PlayFabClientAPI.ExecuteCloudScript(new ExecuteCloudScriptRequest
+        {
+            FunctionName = "GetUserLastLogin",
+            FunctionParameter = new { PlayFabId = playFabId },
+        },
+        result =>
+        {
+            lastLogin = (System.DateTime)result.FunctionResult;
+            DebugLogger.Instance.LogText(result.FunctionResult.ToString());
+        },
+        error =>
+        {
+            DebugLogger.Instance.OnPlayFabError(error);
+        });
+        return lastLogin;
+    }
     #endregion
 
     #region Player Stats

@@ -249,6 +249,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   displayName: {fileID: 5951861096331156595}
+  playFabId: 
 --- !u!1 &5951861095935284412
 GameObject:
   m_ObjectHideFlags: 0
@@ -763,7 +764,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 5951861095688286556}
         m_TargetAssemblyTypeName: AddFriendButton, Assembly-CSharp
-        m_MethodName: OnUnfriend
+        m_MethodName: Unfriend
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

@@ -1,0 +1,15 @@
+Server preset accounts list
+
+Username	Email				Password
+DefaultGuy 	default@default.com		Password123
+TommyVercetti	tommy@mafia.com			tommyTV
+CloudSpeed	speed@cloud.com			GTA3
+summit1g	summit1g@hotmail.com		yomom
+JohnWick	wick@cyberpunk.com		Chapter1
+JackMa		jackma@alibaba.com		alibaba
+JasonVoorhees	friday@13.com			friday13
+BigECheese	bigE@cheese.com			bigE123
+JohnCena	johncena@wwe.com		TheRock
+DIO		DIO@jojo.com			jotaro
+Barney		barney@dinosaur.com		Dinosaur
+Garen		garen@league.com		GarenMain
