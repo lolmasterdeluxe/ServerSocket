@@ -1,6 +1,7 @@
 using PlayFab;
 using PlayFab.GroupsModels;
 using PlayFab.DataModels;
+using PlayFab.ClientModels;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -57,6 +58,8 @@ public class GuildManager : MonoBehaviour
     public TMP_InputField guildSearch;
     private PlayFab.GroupsModels.EntityKey guildEntityKey;
     public string guildToJoinId;
+
+    private PlayFab.DataModels.EntityKey adminEntityKey;
     //public readonly HashSet<KeyValuePair<string, string>> EntityGroupPairs = new HashSet<KeyValuePair<string, string>>();
     //public readonly Dictionary<string, string> GroupNameById = new Dictionary<string, string>();
 
@@ -128,6 +131,48 @@ public class GuildManager : MonoBehaviour
             DebugLogger.Instance.LogText(error.GenerateErrorReport());
         });
     }
+
+    // List all guilds with admin's entity key
+    private void ListAllGroups(PlayFab.GroupsModels.EntityKey entityKey)
+    {
+        PlayFabClientAPI.ExecuteCloudScript(new ExecuteCloudScriptRequest
+        {
+            FunctionName = "GetGuilds",
+            FunctionParameter = new { Entity = adminEntityKey },
+        },
+        result =>
+        {
+            // Parse Json & Get groups
+            ListMembershipResponse groupJsonData = JsonUtility.FromJson<ListMembershipResponse>(result.FunctionResult.ToString());
+            if (groupJsonData.Groups.Count == 0)
+            {
+                guildListPanel.SetActive(true);
+                guildPanel.SetActive(false);
+                DebugLogger.Instance.LogText("Groups are null");
+            }
+            else
+            {
+                guildListPanel.SetActive(false);
+                guildPanel.SetActive(true);
+                DebugLogger.Instance.LogText("Groups not null");
+            }
+
+            foreach (var pair in groupJsonData.Groups)
+            {
+                GameObject guildBar = Instantiate(guildBarPrefab, guildBarContainer);
+                guildBar.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = pair.GroupName;
+                guildBar.GetComponent<GuildInfo>().SetGroupData(pair.GroupName, pair.Group.Id, pair.Group.Type);
+                guildEntityKey = pair.Group;
+                ListGroupMembers(pair.Group);
+                inGuildName.text = pair.GroupName;
+                DebugLogger.Instance.LogText("Showing group: " + pair.GroupName);
+            }
+        },
+        error =>
+        {
+            DebugLogger.Instance.OnPlayFabError(error);
+        });
+    }
     #endregion
 
     #region Group Creation and deletion
@@ -149,6 +194,9 @@ public class GuildManager : MonoBehaviour
             CreateRole(result.Group, "ROLE01", "Co-Leader");
             CreateRole(result.Group, "ROLE02", "Moderator");
             CreateRole(result.Group, "ROLE03", "Member");
+
+            // Connect admin account to every guild
+            ConnectGroupToAdmin(entityKey);
 
             SetGroupInfo(new PlayFab.DataModels.EntityKey { Id = result.Group.Id, Type = result.Group.Type });
             ListGroupsWithParams();
@@ -177,6 +225,23 @@ public class GuildManager : MonoBehaviour
             DeleteGroup(guildBarContainer.GetChild(i).GetComponent<GuildInfo>().groupId);
         }
         
+    }
+
+    private void ConnectGroupToAdmin(PlayFab.GroupsModels.EntityKey entityKey)
+    {
+        PlayFabClientAPI.ExecuteCloudScript(new ExecuteCloudScriptRequest
+        {
+            FunctionName = "JoinGuild",
+            FunctionParameter = new { GroupEntity = entityKey, Entity = adminEntityKey },
+        },
+       result =>
+       {
+           DebugLogger.Instance.LogText(result.FunctionResult.ToString());
+       },
+       error =>
+       {
+           DebugLogger.Instance.OnPlayFabError(error);
+       });
     }
     #endregion
 
