@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using PlayFab.CloudScriptModels;
 
 /// <summary>
 /// Assumptions for this controller:
@@ -94,51 +95,19 @@ public class GuildManager : MonoBehaviour
     
     public void ListGroupsWithParams()
     {
-        ListGroups(EntityKeyMaker(PlayerStats.entityId, PlayerStats.entityType));
-        DebugLogger.Instance.LogText("Listing groups with " + PlayerStats.entityId);
+        GetPlayerJoinedGroup(new PlayFab.DataModels.EntityKey { Id = PlayerStats.entityId, Type = PlayerStats.entityType });
+
         // Refresh list
         ResetGrouplist();
     }
-    private void ListGroups(PlayFab.GroupsModels.EntityKey entityKey)
-    {
-        PlayFabGroupsAPI.ListMembership(new ListMembershipRequest { Entity = entityKey },
-        result => {
-            if (result.Groups.Count == 0)
-            {
-                guildListPanel.SetActive(true);
-                guildPanel.SetActive(false);
-                DebugLogger.Instance.LogText("Groups are null");
-            }
-            else
-            {
-                guildListPanel.SetActive(false);
-                guildPanel.SetActive(true);
-                DebugLogger.Instance.LogText("Groups not null");
-            }
 
-            foreach (var pair in result.Groups)
-            {
-                GameObject guildBar = Instantiate(guildBarPrefab, guildBarContainer);
-                guildBar.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = pair.GroupName;
-                guildBar.GetComponent<GuildInfo>().SetGroupData(pair.GroupName, pair.Group.Id, pair.Group.Type);
-                guildEntityKey = pair.Group;
-                ListGroupMembers(pair.Group);
-                inGuildName.text = pair.GroupName;
-                DebugLogger.Instance.LogText("Showing group: " + pair.GroupName);
-            }
-        }, 
-        (error) => {
-            DebugLogger.Instance.LogText(error.GenerateErrorReport());
-        });
-    }
-
-    // List all guilds with admin's entity key
-    private void ListAllGroups(PlayFab.GroupsModels.EntityKey entityKey)
+    private void GetPlayerJoinedGroup(PlayFab.DataModels.EntityKey entityKey)
     {
+        DebugLogger.Instance.LogText("Getting group from " + entityKey);
         PlayFabClientAPI.ExecuteCloudScript(new ExecuteCloudScriptRequest
         {
             FunctionName = "GetGuilds",
-            FunctionParameter = new { Entity = adminEntityKey },
+            FunctionParameter = new { Entity = entityKey },
         },
         result =>
         {
@@ -149,22 +118,51 @@ public class GuildManager : MonoBehaviour
                 guildListPanel.SetActive(true);
                 guildPanel.SetActive(false);
                 DebugLogger.Instance.LogText("Groups are null");
+                ListAllGroups();
             }
             else
             {
+                guildEntityKey = groupJsonData.Groups[0].Group;
+                inGuildName.text = groupJsonData.Groups[0].GroupName;
+                ListGroupMembersWithParams();
                 guildListPanel.SetActive(false);
                 guildPanel.SetActive(true);
-                DebugLogger.Instance.LogText("Groups not null");
+                DebugLogger.Instance.LogText("Groups is " + groupJsonData.Groups[0].GroupName);
             }
+        },
+        error =>
+        {
+            DebugLogger.Instance.OnPlayFabError(error);
+        });
+    }
+    // List all guilds with admin's entity key
+    private void ListAllGroups()
+    {
+        DebugLogger.Instance.LogText("Listing groups with " + adminEntityKey);
+        PlayFabCloudScriptAPI.ExecuteEntityCloudScript(new ExecuteEntityCloudScriptRequest
+        {
+            FunctionName = "GetGuilds",
+            FunctionParameter = new { Entity = adminEntityKey },
+        },
+        result =>
+        {
+            // Parse Json & Get groups
+            ListMembershipResponse groupJsonData = JsonUtility.FromJson<ListMembershipResponse>(result.FunctionResult.ToString());
+            DebugLogger.Instance.LogText("List All Groups Json Data: " + result.FunctionResult.ToString());
 
             foreach (var pair in groupJsonData.Groups)
             {
                 GameObject guildBar = Instantiate(guildBarPrefab, guildBarContainer);
+
+                // Set guild visual bar
                 guildBar.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = pair.GroupName;
                 guildBar.GetComponent<GuildInfo>().SetGroupData(pair.GroupName, pair.Group.Id, pair.Group.Type);
-                guildEntityKey = pair.Group;
-                ListGroupMembers(pair.Group);
-                inGuildName.text = pair.GroupName;
+
+                TextMeshProUGUI memberCountText = guildBar.transform.GetChild(1).GetChild(0).GetComponent<TextMeshProUGUI>();
+                TextMeshProUGUI guildTotalWealthText = guildBar.transform.GetChild(2).GetComponent<TextMeshProUGUI>();
+                GetGroupMemberCount(pair.Group, memberCountText);
+                GetGroupTotalWealth(pair.Group, guildTotalWealthText);
+
                 DebugLogger.Instance.LogText("Showing group: " + pair.GroupName);
             }
         },
@@ -218,30 +216,62 @@ public class GuildManager : MonoBehaviour
         });
     }
 
+    public void DeleteGroupWithAdminRights(string groupId)
+    {
+        PlayFabCloudScriptAPI.ExecuteEntityCloudScript(new ExecuteEntityCloudScriptRequest
+        {
+            FunctionName = "DeleteGroup",
+            FunctionParameter = new { GroupEntity = EntityKeyMaker(groupId) },
+        },
+        result =>
+        {
+            //DebugLogger.Instance.LogText(result.FunctionResult.ToString());
+            //var prevRequest = (DeleteGroupRequest)result.Request;
+            //Debug.Log("Group Deleted: " + prevRequest.Group.Id);
+            ListGroupsWithParams();
+        },
+        error =>
+        {
+            DebugLogger.Instance.OnPlayFabError(error);
+        });
+    }
+
     public void WipeOffTestGroups()
     {
         for (int i = 0; i < guildBarContainer.childCount; ++i)
         {
-            DeleteGroup(guildBarContainer.GetChild(i).GetComponent<GuildInfo>().groupId);
+            DeleteGroupWithAdminRights(guildBarContainer.GetChild(i).GetComponent<GuildInfo>().groupId);
         }
         
     }
 
     private void ConnectGroupToAdmin(PlayFab.GroupsModels.EntityKey entityKey)
     {
-        PlayFabClientAPI.ExecuteCloudScript(new ExecuteCloudScriptRequest
+        PlayFabCloudScriptAPI.ExecuteEntityCloudScript(new ExecuteEntityCloudScriptRequest
         {
-            FunctionName = "JoinGuild",
+            FunctionName = "ApplyGuild",
             FunctionParameter = new { GroupEntity = entityKey, Entity = adminEntityKey },
         },
-       result =>
-       {
-           DebugLogger.Instance.LogText(result.FunctionResult.ToString());
-       },
-       error =>
-       {
-           DebugLogger.Instance.OnPlayFabError(error);
-       });
+        result =>
+        {
+            PlayFabCloudScriptAPI.ExecuteEntityCloudScript(new ExecuteEntityCloudScriptRequest
+            {
+                FunctionName = "AcceptGuildApplication",
+                FunctionParameter = new { GroupEntity = entityKey, Entity = adminEntityKey },
+            },
+            result =>
+            {
+                //DebugLogger.Instance.LogText(result.FunctionResult.ToString());
+            },
+            error =>
+            {
+                DebugLogger.Instance.OnPlayFabError(error);
+            });
+        },
+        error =>
+        {
+            DebugLogger.Instance.OnPlayFabError(error);
+        });
     }
     #endregion
 
@@ -285,6 +315,7 @@ public class GuildManager : MonoBehaviour
     }
     public void ListGroupMembersWithParams()
     {
+        // List group members in guild
         ListGroupMembers(guildEntityKey);
     }
     private void ListGroupMembers(PlayFab.GroupsModels.EntityKey entityKey)
@@ -293,13 +324,28 @@ public class GuildManager : MonoBehaviour
         PlayFabGroupsAPI.ListGroupMembers(new ListGroupMembersRequest { Group = entityKey }, 
         result =>
         {
-            for (int i = 0; i < result.Members[0].Members.Count; ++i)
+            for (int i = 0; i < result.Members.Count; ++i)
             {
-                GameObject memberBar = Instantiate(memberBarPrefab, memberBarContainer);
-                SetMemberProfile(result.Members[0].Members[i].Key, memberBar);
-               
-                memberBar.transform.GetChild(3).GetComponent<TextMeshProUGUI>().text = "Role: " + result.Members[0].RoleName;
-                DebugLogger.Instance.LogText("Guild member listed: " + result.Members[0].Members[i].Key.Id);
+                for (int k = 0; k < result.Members[i].Members.Count; ++k)
+                {
+                    GameObject memberBar = Instantiate(memberBarPrefab, memberBarContainer);
+
+                    PlayFab.GroupsModels.EntityKey masterEntity;
+                    result.Members[i].Members[k].Lineage.TryGetValue("master_player_account", out masterEntity);
+
+                    DebugLogger.Instance.LogText("PlayFab ID: " + PlayerStats.ID);
+                    DebugLogger.Instance.LogText("Master Entity ID: " + masterEntity.Id);
+                    // Get respective player data and display
+                    GetMemberProfile(masterEntity, memberBar.transform.GetChild(1).GetComponent<TextMeshProUGUI>());
+
+                    //GetMemberData(masterEntity, memberBar.transform.GetChild(5).GetChild(0).GetComponent<TextMeshProUGUI>());
+
+                    //GetMemberVirtualCurrency(masterEntity, memberBar.transform.GetChild(2).GetChild(0).GetComponent<TextMeshProUGUI>());
+
+                    memberBar.transform.GetChild(3).GetComponent<TextMeshProUGUI>().text = "Role: " + result.Members[0].RoleName;
+                    DebugLogger.Instance.LogText("Guild member listed: " + result.Members[0].Members[i].Key.Id);
+                }
+                
             }
         }, 
         (error) =>
@@ -308,20 +354,143 @@ public class GuildManager : MonoBehaviour
         });
     }
 
-    private void SetMemberProfile(PlayFab.GroupsModels.EntityKey entityKey, GameObject memberBar)
+    private void GetGroupMemberCount(PlayFab.GroupsModels.EntityKey entityKey, TextMeshProUGUI groupMemberText)
     {
-        PlayFabProfilesAPI.GetProfile(new PlayFab.ProfilesModels.GetEntityProfileRequest { Entity = new PlayFab.ProfilesModels.EntityKey {Id = entityKey.Id, Type = entityKey.Type } },
+        int memberCount = 0;
+        PlayFabCloudScriptAPI.ExecuteEntityCloudScript(new ExecuteEntityCloudScriptRequest
+        {
+            FunctionName = "GetGuildMembers",
+            FunctionParameter = new { GroupEntity = entityKey },
+        },
         result =>
         {
-            memberBar.transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = result.Profile.DisplayName;
-            DebugLogger.Instance.LogText("Guild member display name set: " + result.Profile.DisplayName);
-        }, 
+            ListGroupMembersResponse groupJsonData = JsonUtility.FromJson<ListGroupMembersResponse>(result.FunctionResult.ToString());
+            for (int i = 0; i < groupJsonData.Members.Count; ++i)
+            {
+                memberCount += groupJsonData.Members[i].Members.Count;
+            }
+            groupMemberText.text = memberCount.ToString();
+        },
         (error) =>
         {
             DebugLogger.Instance.LogText(error.GenerateErrorReport());
         });
     }
 
+    private void GetGroupTotalWealth(PlayFab.GroupsModels.EntityKey entityKey, TextMeshProUGUI totalWealthText)
+    {
+        int totalWealth = 0;
+        PlayFabCloudScriptAPI.ExecuteEntityCloudScript(new ExecuteEntityCloudScriptRequest
+        {
+            FunctionName = "GetGuildMembers",
+            FunctionParameter = new { GroupEntity = entityKey },
+        },
+        result =>
+        {
+            ListGroupMembersResponse groupJsonData = JsonUtility.FromJson<ListGroupMembersResponse>(result.FunctionResult.ToString());
+            for (int i = 0; i < groupJsonData.Members.Count; ++i)
+            {
+                for (int k = 0; k < groupJsonData.Members[i].Members.Count; ++k)
+                {
+                    AddMemberVirtualCurrency(totalWealth, groupJsonData.Members[i].Members[k].Key);
+                }
+            }
+            totalWealthText.text = "$" + totalWealth;
+        },
+        (error) =>
+        {
+            DebugLogger.Instance.LogText(error.GenerateErrorReport());
+        });
+    }
+
+    #endregion
+
+    #region Get Member Data
+    private void GetMemberProfile(PlayFab.GroupsModels.EntityKey entityKey, TextMeshProUGUI profileText)
+    {
+        PlayFabClientAPI.ExecuteCloudScript(new ExecuteCloudScriptRequest
+        {
+            FunctionName = "GetPlayerProfile",
+            FunctionParameter = new { PlayFabId = entityKey.Id },
+        },
+        result =>
+        {
+            // Parse Json & Get groups
+            GetPlayerProfileResult profile = JsonUtility.FromJson<GetPlayerProfileResult>(result.FunctionResult.ToString());
+            profileText.text = profile.PlayerProfile.DisplayName;
+            DebugLogger.Instance.LogText("Member profile received successfully.");
+        },
+        error =>
+        {
+            DebugLogger.Instance.OnPlayFabError(error);
+        });
+    }
+
+    private void GetMemberData(PlayFab.GroupsModels.EntityKey entityKey, TextMeshProUGUI dataText)
+    {
+        PlayFabClientAPI.ExecuteCloudScript(new ExecuteCloudScriptRequest
+        {
+            FunctionName = "GetPlayerData",
+            FunctionParameter = new { PlayFabId = entityKey.Id },
+        },
+        result =>
+        {
+            // Parse Json & Get groups
+            GetUserDataResult playerData = JsonUtility.FromJson<GetUserDataResult>(result.FunctionResult.ToString());
+            if (playerData.Data != null && playerData.Data.ContainsKey("Level"))
+                dataText.text = playerData.Data["Level"].Value;
+            DebugLogger.Instance.LogText("Player data received successfully.");
+        },
+        error =>
+        {
+            DebugLogger.Instance.OnPlayFabError(error);
+        });
+    }
+
+    private void GetMemberVirtualCurrency(PlayFab.GroupsModels.EntityKey entityKey, TextMeshProUGUI moneyText)
+    {
+        PlayFabClientAPI.ExecuteCloudScript(new ExecuteCloudScriptRequest
+        {
+            FunctionName = "GetPlayerInventory",
+            FunctionParameter = new { PlayFabId = entityKey.Id },
+        },
+        result =>
+        {
+            // Parse Json & Get groups
+            int money = 0;
+            GetUserInventoryResult playerInventory = JsonUtility.FromJson<GetUserInventoryResult>(result.FunctionResult.ToString());
+            DebugLogger.Instance.LogText(result.FunctionResult.ToString());
+            money = playerInventory.VirtualCurrency["SG"];
+            moneyText.text = money.ToString();
+            DebugLogger.Instance.LogText("Player virtual currency received successfully.");
+        },
+        error =>
+        {
+            DebugLogger.Instance.OnPlayFabError(error);
+        });
+    }
+
+    private void AddMemberVirtualCurrency(int moneyToAdd, PlayFab.GroupsModels.EntityKey entityKey)
+    {
+        PlayFabClientAPI.ExecuteCloudScript(new ExecuteCloudScriptRequest
+        {
+            FunctionName = "GetPlayerInventory",
+            FunctionParameter = new { PlayFabId = entityKey.Id },
+        },
+        result =>
+        {
+            // Parse Json & Get groups
+            int money = 0;
+            GetUserInventoryResult playerInventory = JsonUtility.FromJson<GetUserInventoryResult>(result.FunctionResult.ToString());
+            playerInventory.VirtualCurrency.TryGetValue("SGD", out money);
+            moneyToAdd += money;
+            DebugLogger.Instance.LogText("Player virtual currency received successfully.");
+        },
+        error =>
+        {
+            DebugLogger.Instance.OnPlayFabError(error);
+        });
+    }
     #endregion
 
     #region Search for group
@@ -338,6 +507,13 @@ public class GuildManager : MonoBehaviour
             GameObject guildBar = Instantiate(guildBarPrefab, guildBarContainer);
             guildBar.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = result.GroupName;
             guildBar.GetComponent<GuildInfo>().SetGroupData(result.GroupName, result.Group.Id, result.Group.Type);
+
+            TextMeshProUGUI memberCountText = guildBar.transform.GetChild(1).GetChild(0).GetComponent<TextMeshProUGUI>();
+            TextMeshProUGUI guildTotalWealthText = guildBar.transform.GetChild(2).GetComponent<TextMeshProUGUI>();
+            DebugLogger.Instance.LogText("Group searched: " + result.Group.Id + "\nType: " + result.Group.Type);
+            GetGroupMemberCount(result.Group, memberCountText);
+            GetGroupTotalWealth(result.Group, guildTotalWealthText);
+
             DebugLogger.Instance.LogText("Searched for group: " + result.GroupName);
         }, 
         (error) => {
@@ -378,7 +554,8 @@ public class GuildManager : MonoBehaviour
 
     public void GetGroupInfoWithParams(string entityId, string entityType)
     {
-        GetGroupInfo(new PlayFab.DataModels.EntityKey { Id = entityId, Type = entityType });
+        //GetGroupInfo(new PlayFab.DataModels.EntityKey { Id = entityId, Type = entityType });
+        GetGroupInfoNonMember(new PlayFab.DataModels.EntityKey { Id = entityId, Type = entityType });
     }
 
     private void GetGroupInfo(PlayFab.DataModels.EntityKey entity)
@@ -393,6 +570,27 @@ public class GuildManager : MonoBehaviour
             },
             DebugLogger.Instance.OnPlayFabError
         );
+    }
+
+    private void GetGroupInfoNonMember(PlayFab.DataModels.EntityKey entity)
+    {
+        PlayFabCloudScriptAPI.ExecuteEntityCloudScript(new ExecuteEntityCloudScriptRequest
+        {
+            FunctionName = "GetGuildInfo",
+            FunctionParameter = new { GroupEntity = entity },
+        },
+        result =>
+        {
+            // Parse Json & Get groups
+            Debug.Log(result.FunctionResult.ToString());
+            GetObjectsResponse groupJsonData = JsonUtility.FromJson<GetObjectsResponse>(result.FunctionResult.ToString());
+            DisplayGroupInfo(groupJsonData.Objects);
+            DebugLogger.Instance.LogText("Group info received successfully");
+        },
+        error =>
+        {
+            DebugLogger.Instance.OnPlayFabError(error);
+        });
     }
 
     public void DisplayGroupInfo(Dictionary<string, ObjectResult> groupData)

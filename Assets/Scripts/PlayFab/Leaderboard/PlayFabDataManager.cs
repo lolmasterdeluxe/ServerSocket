@@ -278,7 +278,7 @@ public class PlayFabDataManager : MonoBehaviour
             PlayFabId = PlayerStats.ID,
             Keys = null
         }, result => {
-            DebugLogger.Instance.LogText("Got user data:");
+            DebugLogger.Instance.LogText("Got user data: " + result.ToJson());
 
             if (result.Data == null || !result.Data.ContainsKey("XP"))
                 DebugLogger.Instance.LogText("No XP");

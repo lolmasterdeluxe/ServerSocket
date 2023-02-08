@@ -27,4 +27,11 @@ public enum EventCodes
 {
     ChatEventCode = 0,
     RequestTradeEventCode = 1,
+    AcceptTradeEventCode = 2,
+    DeclineTradeEventCode = 3,
+    CancelTradeEventCode = 4,
+    BroadcastTradeStatusEventCode = 5,
+    ConfirmTradeStatusEventCode = 6,
+    CancelTradeProcessEventCode = 7,
+    CommenceTradeEventCode = 8
 }

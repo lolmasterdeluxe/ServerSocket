@@ -3,7 +3,14 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Leaderboard
+  - CurrentText
+  - Guild
+  - Friends
+  - Shop
+  - Game
+  - Options
   layers:
   - Default
   - TransparentFX

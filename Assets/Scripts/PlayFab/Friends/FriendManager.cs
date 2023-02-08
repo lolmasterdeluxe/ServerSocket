@@ -33,6 +33,8 @@ public class FriendManager : MonoBehaviour
     private GameObject notificationPanel;
     [SerializeField]
     private GameObject unfriendConfirmationPanel;
+    [SerializeField]
+    private GameObject inGameNotificationPanel;
 
     [Header("Buttons")]
     [SerializeField]
@@ -47,6 +49,10 @@ public class FriendManager : MonoBehaviour
     private TextMeshProUGUI emptyFriendListText;
     [SerializeField]
     private TextMeshProUGUI emptyFriendRequestText;
+
+    [Header("Send Friend Request Options Menu")]
+    public string recipientDisplayName;
+    public string recipientID;
     private string unfriendDisplayName;
 
     #region List friends & friend requests
@@ -204,6 +210,28 @@ public class FriendManager : MonoBehaviour
         {
             DebugLogger.Instance.OnPlayFabError(error);
             Notify("Unfriend unsuccessful, please try again.");
+        });
+    }
+    public void SendFriendRequestInGame()
+    {
+        PlayFabClientAPI.ExecuteCloudScript(new ExecuteCloudScriptRequest
+        {
+            FunctionName = "SendFriendRequest",
+            FunctionParameter = new
+            {
+                SenderPlayFabId = PlayerStats.ID,
+                FriendPlayFabId = recipientID,
+            },
+        },
+        result =>
+        {
+            DebugLogger.Instance.LogText("Friend request successfully sent to " + recipientDisplayName);
+            NotifyInGame("Friend request sent to " + recipientDisplayName);
+        },
+        error =>
+        {
+            NotifyInGame("Friend request failed, " + error);
+            DebugLogger.Instance.OnPlayFabError(error);
         });
     }
 
@@ -367,6 +395,14 @@ public class FriendManager : MonoBehaviour
     {
         notificationPanel.SetActive(true);
         TextMeshProUGUI notiftext = notificationPanel.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
+        notiftext.text = notificationText;
+        
+    }
+
+    private void NotifyInGame(string notificationText)
+    {
+        inGameNotificationPanel.SetActive(true);
+        TextMeshProUGUI notiftext = inGameNotificationPanel.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
         notiftext.text = notificationText;
     }
 

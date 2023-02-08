@@ -16,3 +16,4 @@ MonoBehaviour:
   itemIcon: {fileID: 21300000, guid: da3489a989b315644b2918cb9df15709, type: 3}
   pointMultiplier: 5
   itemInstanceId: 
+  itemPrice: 500

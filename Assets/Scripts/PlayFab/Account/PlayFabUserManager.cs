@@ -118,6 +118,9 @@ public class PlayFabUserManager : MonoBehaviour
             {
                 PlayerStats.entityId = entityResult.Entity.Id;
                 PlayerStats.entityType = entityResult.Entity.Type;
+                DebugLogger.Instance.LogText("PlayFab ID: " + PlayerStats.ID);
+                DebugLogger.Instance.LogText("Entity token created.");
+                DebugLogger.Instance.LogText("ID: " + entityResult.Entity.Id + "\nType: " + entityResult.Entity.Type);
             }, DebugLogger.Instance.OnPlayFabError); // Define your own OnPlayFabError function to report errors
 
             DebugLogger.Instance.LogText("Login Success!");

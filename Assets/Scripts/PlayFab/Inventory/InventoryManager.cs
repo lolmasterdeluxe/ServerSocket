@@ -30,8 +30,8 @@ public class InventoryManager : MonoBehaviour
 
     [Header("Icons")]
     [SerializeField]
-    private List<Sprite> itemIcons;
-    private Sprite itemIcon;
+    public List<Sprite> itemIcons;
+    public Sprite itemIcon;
 
     [Header("Items for sale in shop")]
     public List<Item> shopItems;
@@ -207,7 +207,7 @@ public class InventoryManager : MonoBehaviour
 
     #region Icon Misc.
 
-    private void SetIcon(CatalogItem item)
+    public void SetIcon(CatalogItem item)
     {
         switch (item.ItemId)
         {
@@ -240,7 +240,7 @@ public class InventoryManager : MonoBehaviour
         }
     }
 
-    private void SetIcon(ItemInstance item)
+    public void SetIcon(ItemInstance item)
     {
         switch (item.ItemId)
         {

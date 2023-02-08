@@ -1,13 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using ExitGames.Client.Photon;
-using Photon.Realtime;
-using Photon.Pun;
+using TMPro;
 
-public class PlayerOptionsManager : RaiseEvents, IOnEventCallback
+public class PlayerOptionsManager : MonoBehaviour
 {
     public string playFabId;
+    public Player player;
     public TradeManager tradeManager;
     public FriendManager friendManager;
     // Start is called before the first frame update
@@ -15,27 +14,16 @@ public class PlayerOptionsManager : RaiseEvents, IOnEventCallback
     {
         tradeManager = FindObjectOfType<TradeManager>();
         friendManager = FindObjectOfType<FriendManager>();
+        player = GetComponent<Player>();
     }
 
-    public override void OnEvent(EventData photonEvent)
+    public void OpenOptionsMenu()
     {
-        byte eventCode = photonEvent.Code;
-        if (eventCode == (byte)EventCodes.RequestTradeEventCode)
-        {
-            object[] data = (object[])photonEvent.CustomData;
-            if ((string)data[0] == playFabId)
-                tradeManager.acceptTradePanel.SetActive(true);
-        }
-        DebugLogger.Instance.LogText("PlayFab ID set!");
+        tradeManager.playerOptionsMenu.SetActive(true);
+        tradeManager.playerOptionsMenu.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = player.displayName + "'s Options";
+        tradeManager.traderPlayFabId = playFabId;
+        tradeManager.traderDisplayName = player.displayName;
+        friendManager.recipientDisplayName = player.displayName;
+        friendManager.recipientID = playFabId;
     }
-
-    public void RequestTrade()
-    {
-        tradeManager.waitForTradePanel.SetActive(true);
-        object[] content = new object[] { playFabId };
-        RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.Others };
-        PhotonNetwork.RaiseEvent((byte)EventCodes.RequestTradeEventCode, content, raiseEventOptions, SendOptions.SendReliable);
-    }
-
-
 }

@@ -22,8 +22,10 @@ public class Player : MonoBehaviourPunCallbacks
     private GameObject friendsPanel;
     private GameObject leaderPanel;
     private GameObject eButton;
+    public GameObject optionsButton;
 
-    public GameObject displayName;
+    public GameObject displayNameGameObject;
+    public string displayName;
     public bool isOffline = false;
     public PlayerOptionsManager playerOptionsManager;
 
@@ -57,8 +59,15 @@ public class Player : MonoBehaviourPunCallbacks
         eButton = GameObject.Find("EButton");
 
         canMove = true;
-        eButton.SetActive(false);
-        photonView.RPC("SetProfile", RpcTarget.AllBuffered, PhotonNetwork.NickName, PlayerStats.ID);
+
+        if (photonView.IsMine)
+            photonView.RPC("SetProfile", RpcTarget.AllBuffered, PhotonNetwork.NickName, PlayerStats.ID);
+
+        if (photonView.IsMine || isOffline)
+        {
+            optionsButton.SetActive(false);
+            eButton.SetActive(false);
+        }
     }
 
     // Update is called once per frame
@@ -91,7 +100,7 @@ public class Player : MonoBehaviourPunCallbacks
     public void HandleBuildingInteraction()
     {
         //If we press E
-        if (eButton.activeInHierarchy && Input.GetKeyDown(KeyCode.E))
+        if (photonView.IsMine && eButton.activeInHierarchy && Input.GetKeyDown(KeyCode.E))
         {
             DebugLogger.Instance.LogText("Detecting 'E' input");
             switch (contactType)
@@ -140,19 +149,20 @@ public class Player : MonoBehaviourPunCallbacks
         {
             animator.SetBool("Is_Running", true);
             spriteRenderer.flipX = false;
+            if (photonView.IsMine && !isOffline)
+                photonView.RPC("FlipSprite", RpcTarget.AllBuffered, spriteRenderer.flipX);
         }
         else if (directionX < 0f)
         {
             animator.SetBool("Is_Running", true);
             spriteRenderer.flipX = true;
+            if (photonView.IsMine && !isOffline)
+                photonView.RPC("FlipSprite", RpcTarget.AllBuffered, spriteRenderer.flipX);
         }
         else
         {
             animator.SetBool("Is_Running", false);
         }
-
-        if (!isOffline)
-            photonView.RPC("FlipSprite", RpcTarget.AllBuffered, spriteRenderer.flipX);
     }
 
     #region Trigger Colliders
@@ -227,8 +237,9 @@ public class Player : MonoBehaviourPunCallbacks
     [PunRPC]
     private void SetProfile(string nickName, string playFabId)
     {
-        displayName.SetActive(true);
-        displayName.GetComponent<TextMeshProUGUI>().text = nickName;
+        displayNameGameObject.SetActive(true);
+        displayNameGameObject.GetComponent<TextMeshProUGUI>().text = nickName;
+        displayName = nickName;
         playerOptionsManager.playFabId = playFabId;
         gameObject.name = nickName;
     }
